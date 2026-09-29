@@ -63,7 +63,7 @@ for (const seq of [episodes, poems]) seq.forEach((x, i) => nav.set(x.slug, [seq[
 // ---------- cards (archive / poetry) ----------
 function card(x, dataSeason, dataEpisode) {
   const img = x.cover ? `<img src="${esc(url(x.cover, ''))}" alt="${esc(x.title)}" loading="lazy" onerror="this.remove()">` : '';
-  return `  <a class="card" href="read/${x.slug}.html" data-thread="all" data-season="${dataSeason}" data-episode="${dataEpisode}">
+  return `  <a class="card" href="read/${x.slug}.html" data-thread="${esc(x.thread || '')}" data-season="${dataSeason}" data-episode="${dataEpisode}">
     <div class="cover">${img}</div>
     <div class="tag">${esc(tagShort(x))}${isPaid(x) ? ' ' + LOCK(12) : ''}</div>
     <h3>${esc(x.title)}</h3>

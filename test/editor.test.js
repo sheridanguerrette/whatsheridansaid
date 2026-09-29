@@ -4,17 +4,23 @@ let JSDOM, VirtualConsole; try { ({ JSDOM, VirtualConsole } = require('jsdom'));
 const test = require('node:test'); const assert = require('node:assert/strict');
 const fs = require('fs'); const path = require('path');
 const { createFakeGitHub } = require('./fake-github');
+const fakeBlobs = require('./fake-blobs'); const blobs = fakeBlobs.install();
 
 const ROOT = path.join(__dirname, '..');
 const HTML = fs.readFileSync(path.join(ROOT, 'src/write/index.html'), 'utf8');
 const seed = fs.readFileSync(path.join(ROOT, 'content/posts.json'));
 process.env.ADMIN_PASSWORD = 'open sesame'; process.env.GITHUB_TOKEN = 'tok'; process.env.GITHUB_REPO = 'me/wss'; process.env.AUTH_FAIL_DELAY_MS = '0';
-const fns = { 'admin-list': require('../netlify/functions/admin-list').handler, 'admin-save': require('../netlify/functions/admin-save').handler, 'admin-upload': require('../netlify/functions/admin-upload').handler };
+process.env.SITE_URL = 'https://site.test';
+const fns = {
+  'admin-list': require('../netlify/functions/admin-list').handler, 'admin-save': require('../netlify/functions/admin-save').handler, 'admin-upload': require('../netlify/functions/admin-upload').handler,
+  'admin-subs-list': require('../netlify/functions/admin-subs-list').handler, 'admin-subs-upsert': require('../netlify/functions/admin-subs-upsert').handler, 'admin-subs-delete': require('../netlify/functions/admin-subs-delete').handler,
+};
 
 const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
 const until = async (fn, ms = 2000) => { const t = Date.now(); while (Date.now() - t < ms) { if (fn()) return true; await tick(10); } return false; };
 
 function boot({ demo } = {}) {
+  blobs.reset();
   const gh = createFakeGitHub({ repo: 'me/wss', token: 'tok', files: { 'content/posts.json': Buffer.from(seed) } }); global.fetch = gh.fetch;
   const errors = []; const vc = new VirtualConsole(); vc.on('jsdomError', (e) => errors.push(e.message));
   const dom = new JSDOM(demo ? HTML.replace('<script>\n(function', `<script>window.__DEMO_POSTS__=${JSON.stringify(demo)};</script><script>\n(function`) : HTML, {
@@ -161,4 +167,41 @@ test('opening and saving ANY old post without editing it changes nothing you can
   }
   assert.deepEqual(damaged, [], 'round-trip changed these posts:\n' + damaged.join('\n'));
   assert.equal(b.gh.json('content/posts.json').length, 58);
+});
+
+test('subscribers tab: adding a subscriber (e.g. a transferred one) shows up in the list', async () => {
+  const b = boot(); await b.login('open sesame');
+  b.$('navSubs').click();
+  assert.equal(b.visible('subsView'), true);
+  await until(() => !/Loading/.test(b.$('subRows').textContent));
+  assert.match(b.$('subRows').textContent, /No subscribers yet/);
+
+  b.type('s-email', 'andymims74@gmail.com');
+  b.$('s-status').value = 'active';
+  b.type('s-expires', '2027-07-21');
+  b.type('s-source', 'wix-transfer');
+  b.type('s-note', 'Transferred yearly member from Wix, renews 7/21.');
+  b.$('s-notify').checked = false; // no RESEND_API_KEY configured in this test
+  b.$('s-submit').click();
+  await until(() => /saved/i.test(b.$('toast').textContent));
+  await until(() => /andymims74/.test(b.$('subRows').textContent));
+
+  assert.match(b.$('subRows').textContent, /wix-transfer/);
+  assert.match(b.$('subRows').textContent, /active/);
+});
+
+test('subscribers tab: editing loads the row back into the form, and removing takes it out of the list', async () => {
+  const b = boot(); await b.login('open sesame');
+  b.$('navSubs').click(); await until(() => !/Loading/.test(b.$('subRows').textContent));
+
+  b.type('s-email', 'reader@example.com'); b.$('s-status').value = 'free'; b.$('s-submit').click();
+  await until(() => /reader@example\.com/.test(b.$('subRows').textContent));
+
+  b.d.querySelector('[data-edit-sub="reader@example.com"]').click();
+  assert.equal(b.$('s-email').value, 'reader@example.com');
+  assert.equal(b.$('s-status').value, 'free');
+
+  b.d.querySelector('[data-del-sub="reader@example.com"]').click();
+  await until(() => /No subscribers yet/.test(b.$('subRows').textContent));
+  assert.doesNotMatch(b.$('subRows').textContent, /reader@example\.com/);
 });

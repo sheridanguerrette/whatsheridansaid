@@ -54,6 +54,16 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
 .new-btns{display:flex;flex-wrap:wrap;gap:10px}
 .tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:22px}
 .tools input{max-width:320px}
+.sub-form{border:1px solid var(--hair);padding:24px;margin-bottom:8px}
+.sub-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;border:1px solid var(--hair);padding:14px 18px;margin-bottom:10px}
+.sub-row .who{display:flex;flex-direction:column;gap:4px}
+.sub-row .who .em{font-size:14px}
+.sub-row .who .sub{font-size:12px;color:var(--muted)}
+.sub-row .badges{display:flex;gap:8px;align-items:center}
+.sub-badge{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--hair);color:var(--muted)}
+.sub-badge.active{color:var(--ok);border-color:var(--ok)}
+.sub-badge.trialing{color:#e0c98f;border-color:#e0c98f}
+.sub-badge.expired,.sub-badge.canceled{color:var(--err);border-color:var(--err)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{background:transparent;border:1px solid var(--hair);color:var(--muted);padding:8px 14px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .chip:hover{color:var(--ink);border-color:var(--ink)}
@@ -133,6 +143,7 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
   <div class="bar">
     <div class="brand">WHAT SHERIDAN SAID<span>Editor</span></div>
     <div class="bar-actions">
+      <button class="btn small" id="navSubs" type="button">Subscribers</button>
       <a class="btn small" href="/" id="viewSite" target="_blank" rel="noopener">View site</a>
       <button class="btn small" id="logout" type="button">Log out</button>
     </div>
@@ -153,6 +164,30 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
       <div class="chips" id="chips"></div>
     </div>
     <div class="rows" id="rows"></div>
+  </main>
+
+  <!-- subscribers -->
+  <main id="subsView" class="wrap hidden">
+    <div class="list-head">
+      <h2>Subscribers</h2>
+      <button class="btn small" id="backFromSubs" type="button">&larr; All posts</button>
+    </div>
+    <div class="sub-form">
+      <div class="list-head"><h2 style="font-size:1.2rem">Add or gift a subscriber</h2></div>
+      <div class="hint" style="margin-bottom:18px">Use this for a Substack subscriber you're honoring here, a transferred subscription, or any free gift of access. No card is ever involved &mdash; you set the status and end date yourself.</div>
+      <div class="grid">
+        <div class="field"><label for="s-email">Email</label><input type="text" id="s-email" placeholder="reader@email.com"></div>
+        <div class="field"><label for="s-status">Status</label>
+          <select id="s-status"><option value="active">Active (full access)</option><option value="trialing">Trialing</option><option value="free">Free tier (no paid access)</option><option value="canceled">Canceled</option><option value="expired">Expired</option></select></div>
+        <div class="field"><label for="s-expires">Access ends (leave blank for no end date)</label><input type="date" id="s-expires"></div>
+        <div class="field"><label for="s-source">Source</label><input type="text" id="s-source" placeholder="e.g. wix-transfer, substack, gift"></div>
+      </div>
+      <div class="field"><label for="s-note">Note to yourself (not shown to the subscriber)</label><textarea id="s-note" rows="2"></textarea></div>
+      <label class="check"><input type="checkbox" id="s-notify" checked> Email them a link to log straight in</label>
+      <div class="new-btns" style="margin-top:18px"><button class="btn primary small" id="s-submit" type="button">Save subscriber</button></div>
+    </div>
+    <div class="list-head" style="margin-top:34px"><h2 style="font-size:1.2rem">Everyone</h2></div>
+    <div class="rows" id="subRows"></div>
   </main>
 
   <!-- edit -->
@@ -182,6 +217,8 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
       <label class="check" id="wrapFinale"><input type="checkbox" id="f-finale"> Season finale</label>
       <div class="field"><label for="f-audience">Who can read it</label>
         <select id="f-audience"><option value="free">Free for everyone</option><option value="paid">Subscribers only</option></select></div>
+      <div class="field" id="wrapThread"><label for="f-thread">Thread</label>
+        <select id="f-thread"><option value="">Not tagged yet</option><option value="love-interest">Love Interest</option><option value="heroine-arc">The Heroine Arc</option><option value="b-roll">B-Roll</option></select></div>
       <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
     </div>
 
@@ -259,6 +296,9 @@ function demoApi(name, payload) {
       return resolve({ ok: true, post: p });
     }
     if (name === 'admin-upload') return resolve({ ok: true, url: 'assets/uploads/demo-' + Date.now() + '.jpg' });
+    if (name === 'admin-subs-list') return resolve({ subscribers: window.__DEMO_SUBS__ || [] });
+    if (name === 'admin-subs-upsert') return resolve({ ok: true });
+    if (name === 'admin-subs-delete') return resolve({ ok: true });
     resolve({});
   }, 450); });
 }
@@ -269,6 +309,7 @@ function show(which) {
   $('app').classList.toggle('hidden', which === 'login');
   $('listView').classList.toggle('hidden', which !== 'list');
   $('editView').classList.toggle('hidden', which !== 'edit');
+  $('subsView').classList.toggle('hidden', which !== 'subs');
   window.scrollTo(0, 0);
 }
 function logout() { PW = ''; try { sessionStorage.removeItem('wss-pw'); } catch (e) {} posts = []; show('login'); $('pw').value = ''; }
@@ -306,6 +347,52 @@ function renderList() {
       '<span class="meta">' + (p.status === 'draft' ? '<span class="badge draft">Draft</span>' : '') +
       '<span class="badge">' + (p.audience === 'free' ? 'Free' : 'Subscribers') + '</span><span>' + esc(p.date) + '</span></span></button>';
   }).join('') : '<div class="empty">Nothing matches that.</div>';
+}
+
+/* ---------- subscribers ---------- */
+var subscribers = [];
+function fmtDate(iso) { if (!iso) return 'No end date'; var d = new Date(iso); return isNaN(d) ? iso : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); }
+function loadSubscribers() {
+  $('subRows').innerHTML = '<div class="empty">Loading&hellip;</div>';
+  return api('admin-subs-list').then(function (d) { subscribers = d.subscribers || []; renderSubscribers(); })
+    .catch(function (e) { if (e.status === 401) { logout(); return; } $('subRows').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+}
+function renderSubscribers() {
+  if (!subscribers.length) { $('subRows').innerHTML = '<div class="empty">No subscribers yet.</div>'; return; }
+  var sorted = subscribers.slice().sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+  $('subRows').innerHTML = sorted.map(function (s) {
+    return '<div class="sub-row" data-email="' + esc(s.email) + '">' +
+      '<div class="who"><div class="em">' + esc(s.email) + '</div><div class="sub">' + esc(s.source || 'manual') + ' &middot; ends ' + esc(fmtDate(s.expires)) + (s.note ? ' &middot; ' + esc(s.note) : '') + '</div></div>' +
+      '<div class="badges"><span class="sub-badge ' + esc(s.status) + '">' + esc(s.status) + '</span>' +
+      '<button class="btn small" data-edit-sub="' + esc(s.email) + '" type="button">Edit</button>' +
+      '<button class="btn small" data-del-sub="' + esc(s.email) + '" type="button">Remove</button></div></div>';
+  }).join('');
+}
+function fillSubForm(s) {
+  $('s-email').value = s ? s.email : ''; $('s-status').value = s ? s.status : 'active';
+  $('s-expires').value = s && s.expires ? s.expires.slice(0, 10) : '';
+  $('s-source').value = s ? (s.source || '') : ''; $('s-note').value = s ? (s.note || '') : '';
+  $('s-notify').checked = !s; // default on only for brand-new adds, not when re-editing someone
+}
+function saveSubscriber() {
+  var email = $('s-email').value.trim();
+  if (!email) { toast('An email is required.', 'error'); return; }
+  var payload = {
+    email: email, status: $('s-status').value,
+    expires: $('s-expires').value || null, source: $('s-source').value.trim() || 'manual',
+    note: $('s-note').value.trim(), notify: $('s-notify').checked,
+  };
+  $('s-submit').disabled = true;
+  api('admin-subs-upsert', payload).then(function (r) {
+    toast(r.notifyError ? 'Saved, but the email could not be sent: ' + r.notifyError : 'Subscriber saved.', r.notifyError ? 'error' : 'ok');
+    fillSubForm(null); return loadSubscribers();
+  }).catch(function (e) { if (e.status === 401) { logout(); return; } toast(e.message, 'error'); })
+    .then(function () { $('s-submit').disabled = false; });
+}
+function deleteSubscriber(email) {
+  if (!confirm('Remove ' + email + '? This cannot be undone.')) return;
+  api('admin-subs-delete', { email: email }).then(function () { toast('Removed.', 'ok'); return loadSubscribers(); })
+    .catch(function (e) { if (e.status === 401) { logout(); return; } toast(e.message, 'error'); });
 }
 
 /* ---------- cleaning pasted / edited HTML ---------- */
@@ -367,6 +454,7 @@ function syncKindFields() {
   $('wrapSeason').classList.toggle('hidden', kind === 'poem');
   $('wrapEpisode').classList.toggle('hidden', kind === 'poem');
   $('wrapFinale').classList.toggle('hidden', kind !== 'episode');
+  $('wrapThread').classList.toggle('hidden', kind !== 'episode');
   $('f-episode').disabled = kind === 'episode' && fin;
   $('lblSeason').textContent = kind === 'special' ? 'Sits in season' : 'Season';
   $('lblEpisode').textContent = kind === 'special' ? 'After episode' : 'Episode';
@@ -386,6 +474,7 @@ function fillForm(p) {
   $('f-title').value = p.title || ''; $('f-subtitle').value = p.subtitle || '';
   $('f-kind').value = p.kind || 'episode'; $('f-season').value = p.season || ''; $('f-episode').value = p.episode || '';
   $('f-finale').checked = !!p.finale; $('f-audience').value = p.audience === 'free' ? 'free' : 'paid';
+  $('f-thread').value = p.thread || '';
   $('f-status').value = p.status === 'draft' ? 'draft' : 'published'; $('f-date').value = p.date || today();
   $('f-cover').value = p.cover || ''; setThumb(p.cover);
   var b = toEditor(p.body || ''); $('body').innerHTML = b || '<p><br></p>';
@@ -406,6 +495,7 @@ function readForm() {
     season: kind === 'poem' ? null : parseInt($('f-season').value, 10) || 1,
     episode: kind === 'poem' || fin ? null : parseInt($('f-episode').value, 10) || 1, finale: fin,
     audience: $('f-audience').value, status: $('f-status').value, date: $('f-date').value,
+    thread: kind === 'episode' ? ($('f-thread').value || null) : null,
     cover: $('f-cover').value.trim(), body: fromEditor(cleanHtml(body)),
   };
   return p;
@@ -531,13 +621,21 @@ $('logout').addEventListener('click', function () { if (!dirty || confirm('You h
 $('search').addEventListener('input', function (e) { query = e.target.value.trim(); renderList(); });
 $('chips').addEventListener('click', function (e) { var b = e.target.closest('[data-filter]'); if (b) { filter = b.dataset.filter; renderList(); } });
 $('rows').addEventListener('click', function (e) { var b = e.target.closest('.row'); if (b) openPost(b.dataset.id); });
+$('navSubs').addEventListener('click', function () { show('subs'); fillSubForm(null); loadSubscribers(); });
+$('backFromSubs').addEventListener('click', function () { show('list'); });
+$('s-submit').addEventListener('click', saveSubscriber);
+$('subRows').addEventListener('click', function (e) {
+  var del = e.target.closest('[data-del-sub]'); if (del) { deleteSubscriber(del.getAttribute('data-del-sub')); return; }
+  var ed = e.target.closest('[data-edit-sub]');
+  if (ed) { var s = subscribers.find(function (x) { return x.email === ed.getAttribute('data-edit-sub'); }); if (s) { fillSubForm(s); window.scrollTo(0, 0); } }
+});
 Array.prototype.forEach.call(document.querySelectorAll('[data-new]'), function (b) { b.addEventListener('click', function () { newPost(b.dataset.new); }); });
 $('back').addEventListener('click', leaveEdit);
 $('save').addEventListener('click', save);
 $('toolbar').addEventListener('mousedown', function (e) { if (e.target.closest('.tb')) e.preventDefault(); });   // keep the text selection
 $('toolbar').addEventListener('click', function (e) { var b = e.target.closest('.tb'); if (!b || b.disabled) return; if (b.dataset.cmd === 'html') toggleHtml(); else command(b.dataset.cmd); });
 $('f-kind').addEventListener('change', function () { syncKindFields(); if (isNew) $('save').textContent = 'Publish'; setDirty(true); });
-['f-finale', 'f-audience'].forEach(function (id) { $(id).addEventListener('change', function () { syncKindFields(); setDirty(true); }); });
+['f-finale', 'f-audience', 'f-thread'].forEach(function (id) { $(id).addEventListener('change', function () { syncKindFields(); setDirty(true); }); });
 ['f-title', 'f-subtitle', 'f-season', 'f-episode', 'f-date', 'f-status', 'bodyHtml'].forEach(function (id) { $(id).addEventListener('input', function () { setDirty(true); }); });
 $('f-cover').addEventListener('input', function () { setThumb($('f-cover').value.trim()); setDirty(true); });
 $('body').addEventListener('input', function () { setDirty(true); });
