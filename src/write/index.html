@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Editor &mdash; What Sheridan Said</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Questrial&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#f5f5f2;--paper:#0a0a0a;--hair:rgba(255,255,255,.14);--muted:#8f8f89;--card:#131313;--err:#ff8f8f;--ok:#9fe0b0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--paper);color:var(--ink);font-family:'Questrial',sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Gloock',serif;font-weight:400;letter-spacing:.01em}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+.hidden{display:none !important}
+:focus-visible{outline:1px solid var(--ink);outline-offset:2px}
+
+/* buttons + fields */
+.btn{background:transparent;border:1px solid var(--hair);padding:11px 20px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,background .2s,color .2s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.primary:hover:not(:disabled){opacity:.85}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.small{padding:8px 14px;font-size:11px}
+input[type=text],input[type=password],input[type=date],input[type=number],select,textarea{width:100%;background:transparent;border:1px solid var(--hair);padding:12px 14px;font-size:14px;outline:none;border-radius:0}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+select option{background:#111;color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--ink)}
+label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.field{margin-bottom:22px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+/* login */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px}
+.login-box{width:100%;max-width:380px;text-align:center}
+.login-box h1{font-size:2rem;margin-bottom:8px}
+.login-box p{color:var(--muted);font-size:14px;margin-bottom:26px}
+.login-box .err{color:var(--err);font-size:13px;min-height:20px;margin-top:14px}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(10,10,10,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--hair);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 5vw}
+.brand{font-family:'Gloock',serif;letter-spacing:.14em;font-size:15px}
+.brand span{font-family:'Questrial',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-left:12px}
+.bar-actions{display:flex;gap:10px;align-items:center}
+.demo{background:#1a1a14;border-bottom:1px solid var(--hair);color:#d8d8a8;font-size:13px;padding:10px 5vw;text-align:center;line-height:1.6}
+
+/* list view */
+.wrap{max-width:1000px;margin:0 auto;padding:40px 5vw 100px}
+.list-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:22px}
+.list-head h2{font-size:1.8rem}
+.new-btns{display:flex;flex-wrap:wrap;gap:10px}
+.tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:22px}
+.tools input{max-width:320px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:transparent;border:1px solid var(--hair);color:var(--muted);padding:8px 14px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.chip:hover{color:var(--ink);border-color:var(--ink)}
+.chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.rows{border-top:1px solid var(--hair)}
+.row{display:grid;grid-template-columns:96px 1fr auto;gap:18px;align-items:center;width:100%;text-align:left;background:transparent;border:none;border-bottom:1px solid var(--hair);padding:18px 6px;cursor:pointer}
+.row:hover{background:var(--card)}
+.row .tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.row .t{font-family:'Gloock',serif;font-size:1.1rem;line-height:1.25}
+.row .s{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.row .meta{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.badge{border:1px solid var(--hair);padding:3px 8px;font-size:10px;letter-spacing:.1em}
+.badge.draft{color:#e8d48a;border-color:#6b5f2a}
+.empty{padding:50px 0;text-align:center;color:var(--muted)}
+@media(max-width:640px){.row{grid-template-columns:1fr;gap:6px}.row .meta{flex-wrap:wrap}}
+
+/* edit view */
+.edit-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:30px}
+.edit-top .left,.edit-top .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.title-in{font-family:'Gloock',serif;font-size:clamp(1.6rem,4vw,2.4rem) !important;padding:14px 0 !important;border:none !important;border-bottom:1px solid var(--hair) !important}
+.title-in:focus{border-bottom-color:var(--ink) !important}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px;margin-bottom:22px}
+.grid .field{margin-bottom:0}
+.check{display:flex;align-items:center;gap:10px;font-size:13px;letter-spacing:0;text-transform:none;color:var(--ink);margin:0;padding-top:34px;cursor:pointer}
+.check input{width:auto}
+.cover-row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.thumb{width:120px;height:90px;border:1px solid var(--hair);background:var(--card) center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
+.cover-fields{flex:1;min-width:220px}
+.cover-fields .actions{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;position:sticky;top:57px;z-index:10;background:var(--paper);border-bottom:1px solid var(--hair)}
+.tb{min-width:38px;height:36px;padding:0 12px;background:transparent;border:1px solid var(--hair);cursor:pointer;font-size:13px}
+.tb:hover{border-color:var(--ink)}
+.tb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tb .g{font-family:'Gloock',serif}
+#body{max-width:680px;margin:0 auto;padding:36px 0 60px;min-height:380px;outline:none;font-size:16px;line-height:1.9;color:#e2e2de}
+#body p{margin-bottom:24px}
+#body p.stanza{text-align:center;color:var(--ink);border-left:2px solid rgba(255,255,255,.14);border-right:2px solid rgba(255,255,255,.14);padding:0 10px}
+#body h2,#body h3,#body h4{font-family:'Gloock',serif;font-weight:400;text-align:center;margin:34px 0 16px}
+#body h3{font-size:1.3rem}
+#body hr{border:none;border-top:1px solid var(--hair);margin:40px auto;width:60px}
+#body figure{margin:32px 0;text-align:center;position:relative}
+#body figure img{max-width:100%;height:auto;display:block;margin:0 auto}
+#body figure.sel{outline:2px solid var(--ink);outline-offset:6px}
+#body figure.broken img{display:none}
+#body figure.broken{border:1px dashed var(--hair);padding:26px 18px;color:var(--muted);font-size:13px;line-height:1.6}
+#body figure.broken::before{content:'This photo is not loading. Select it and press Delete, or add a new one with the Photo button.'}
+#body figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+#body a{text-decoration:underline;text-underline-offset:3px}
+#body blockquote{border-left:1px solid var(--hair);padding-left:18px;color:#cfcfca;margin-bottom:24px}
+#body pre{white-space:pre-wrap;font-family:inherit;font-size:15px;border-left:1px solid var(--hair);padding:2px 0 2px 18px;color:#cfcfca;margin-bottom:24px}
+#bodyHtml{max-width:900px;margin:24px auto;min-height:420px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.6}
+.paywall-note{max-width:680px;margin:0 auto 30px;font-size:12.5px;color:var(--muted);border:1px dashed var(--hair);padding:12px 16px;line-height:1.6}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#1b1b1b;border:1px solid var(--hair);padding:14px 22px;font-size:14px;max-width:90vw;transition:opacity .25s,transform .25s;z-index:50;text-align:center;line-height:1.5}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.error{border-color:var(--err);color:var(--err)}
+#toast.ok{border-color:#4d7d5b;color:var(--ok)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="login">
+  <form class="login-box" id="loginForm" autocomplete="off">
+    <h1>What Sheridan Said</h1>
+    <p>Editor</p>
+    <div class="field"><input type="password" id="pw" placeholder="Password" aria-label="Password" autofocus></div>
+    <button class="btn primary" type="submit" id="loginBtn" style="width:100%">Enter</button>
+    <div class="err" id="loginErr" role="alert"></div>
+  </form>
+</section>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <div class="demo hidden" id="demoBanner">Demo mode &mdash; nothing you do here is saved or sent anywhere. Once your site is set up, this exact page edits your real posts.</div>
+  <div class="bar">
+    <div class="brand">WHAT SHERIDAN SAID<span>Editor</span></div>
+    <div class="bar-actions">
+      <a class="btn small" href="/" id="viewSite" target="_blank" rel="noopener">View site</a>
+      <button class="btn small" id="logout" type="button">Log out</button>
+    </div>
+  </div>
+
+  <!-- list -->
+  <main id="listView" class="wrap">
+    <div class="list-head">
+      <h2>All posts</h2>
+      <div class="new-btns">
+        <button class="btn primary small" data-new="episode" type="button">+ New episode</button>
+        <button class="btn small" data-new="poem" type="button">+ New poem</button>
+        <button class="btn small" data-new="special" type="button">+ New bonus post</button>
+      </div>
+    </div>
+    <div class="tools">
+      <input type="text" id="search" placeholder="Search titles&hellip;" aria-label="Search posts">
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="rows" id="rows"></div>
+  </main>
+
+  <!-- edit -->
+  <main id="editView" class="wrap hidden">
+    <div class="edit-top">
+      <div class="left">
+        <button class="btn small" id="back" type="button">&larr; All posts</button>
+        <a class="btn small hidden" id="openPage" href="#" target="_blank" rel="noopener">Open page &nearr;</a>
+      </div>
+      <div class="right">
+        <select id="f-status" aria-label="Status" style="width:auto">
+          <option value="published">Published</option>
+          <option value="draft">Draft (hidden)</option>
+        </select>
+        <button class="btn primary" id="save" type="button">Save</button>
+      </div>
+    </div>
+
+    <input type="text" class="title-in" id="f-title" placeholder="Title" aria-label="Title" maxlength="200">
+    <div class="field" style="margin-top:18px"><label for="f-subtitle">Subtitle (the line under the title and in search results)</label><textarea id="f-subtitle" rows="2" maxlength="400"></textarea></div>
+
+    <div class="grid">
+      <div class="field"><label for="f-kind">Type</label>
+        <select id="f-kind"><option value="episode">Episode</option><option value="poem">Poem</option><option value="special">Bonus post</option></select></div>
+      <div class="field" id="wrapSeason"><label for="f-season" id="lblSeason">Season</label><input type="number" id="f-season" min="1"></div>
+      <div class="field" id="wrapEpisode"><label for="f-episode" id="lblEpisode">Episode</label><input type="number" id="f-episode" min="1"></div>
+      <label class="check" id="wrapFinale"><input type="checkbox" id="f-finale"> Season finale</label>
+      <div class="field"><label for="f-audience">Who can read it</label>
+        <select id="f-audience"><option value="free">Free for everyone</option><option value="paid">Subscribers only</option></select></div>
+      <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
+    </div>
+
+    <div class="field">
+      <label>Cover photo</label>
+      <div class="cover-row">
+        <div class="thumb" id="thumb">No photo</div>
+        <div class="cover-fields">
+          <input type="text" id="f-cover" placeholder="Paste an image link, or upload one" aria-label="Cover image link">
+          <div class="actions">
+            <button class="btn small" id="uploadCover" type="button">Upload photo</button>
+            <button class="btn small" id="clearCover" type="button">Remove</button>
+          </div>
+          <div class="hint">Uploaded photos are resized automatically and appear on the site about a minute after you save.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:0"><label>Writing</label></div>
+    <div class="toolbar" id="toolbar" role="toolbar" aria-label="Formatting">
+      <button class="tb" data-cmd="bold" title="Bold (Ctrl/Cmd+B)" type="button"><b>B</b></button>
+      <button class="tb" data-cmd="italic" title="Italic (Ctrl/Cmd+I)" type="button"><i>I</i></button>
+      <button class="tb" data-cmd="link" title="Add or remove a link" type="button">Link</button>
+      <button class="tb" data-cmd="heading" title="Section heading" type="button"><span class="g">H</span></button>
+      <button class="tb" data-cmd="stanza" title="Centered stanza (for poems)" type="button">Stanza</button>
+      <button class="tb" data-cmd="divider" title="Divider line" type="button">&mdash;</button>
+      <button class="tb" data-cmd="image" title="Insert a photo" type="button">Photo</button>
+      <button class="tb" data-cmd="html" title="Edit the raw HTML" type="button" style="margin-left:auto">&lt;/&gt;</button>
+    </div>
+    <div class="paywall-note hidden" id="paywallNote"></div>
+    <div id="body" contenteditable="true" spellcheck="true" aria-label="Post text"></div>
+    <textarea id="bodyHtml" class="hidden" spellcheck="false" aria-label="Post HTML"></textarea>
+    <input type="file" id="filePick" accept="image/*" class="hidden">
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+'use strict';
+var DEMO = window.__DEMO_POSTS__ || null;          // only present in the preview copy of this page
+var API = '/.netlify/functions/';
+var $ = function (id) { return document.getElementById(id); };
+var PW = ''; try { PW = sessionStorage.getItem('wss-pw') || ''; } catch (e) {}
+var posts = [], current = null, isNew = false, dirty = false, htmlMode = false;
+var filter = 'all', query = '', blobMap = {}, backupTimer = null;
+
+/* ---------- helpers ---------- */
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function toast(msg, kind) {
+  var t = $('toast'); t.textContent = msg; t.className = 'show ' + (kind || '');
+  clearTimeout(toast._t); toast._t = setTimeout(function () { t.className = kind || ''; }, kind === 'error' ? 6000 : 3500);
+}
+function tagOf(p) {
+  if (p.kind === 'poem') return 'Poem'; if (p.kind === 'special') return 'Bonus';
+  return p.finale ? 'S' + p.season + ' Finale' : 'S' + p.season + ' E' + String(p.episode).padStart(2, '0');
+}
+function today() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function sortKey(p) { return (p.season || 0) * 1000 + (p.finale ? 999 : (p.episode || 0)); }
+
+/* ---------- api ---------- */
+function api(name, payload) {
+  if (DEMO) return demoApi(name, payload);
+  return fetch(API + name, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + PW }, body: JSON.stringify(payload || {}) })
+    .then(function (res) { return res.json().catch(function () { return {}; }).then(function (data) {
+      if (!res.ok) { var e = new Error(data.error || ('Something went wrong (' + res.status + ').')); e.status = res.status; throw e; }
+      return data; }); });
+}
+function demoApi(name, payload) {
+  return new Promise(function (resolve) { setTimeout(function () {
+    if (name === 'admin-list') return resolve({ posts: DEMO });
+    if (name === 'admin-save') {
+      var p = JSON.parse(JSON.stringify(payload.post));
+      if (payload.isNew) { p.slug = (p.title || 'post').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); p.id = p.slug; }
+      return resolve({ ok: true, post: p });
+    }
+    if (name === 'admin-upload') return resolve({ ok: true, url: 'assets/uploads/demo-' + Date.now() + '.jpg' });
+    resolve({});
+  }, 450); });
+}
+
+/* ---------- screens ---------- */
+function show(which) {
+  $('login').classList.toggle('hidden', which !== 'login');
+  $('app').classList.toggle('hidden', which === 'login');
+  $('listView').classList.toggle('hidden', which !== 'list');
+  $('editView').classList.toggle('hidden', which !== 'edit');
+  window.scrollTo(0, 0);
+}
+function logout() { PW = ''; try { sessionStorage.removeItem('wss-pw'); } catch (e) {} posts = []; show('login'); $('pw').value = ''; }
+
+function login(pw) {
+  $('loginErr').textContent = ''; $('loginBtn').disabled = true; $('loginBtn').textContent = 'Checking\u2026';
+  PW = pw;
+  return api('admin-list').then(function (d) {
+    posts = d.posts || []; try { sessionStorage.setItem('wss-pw', pw); } catch (e) {}
+    renderList(); show('list');
+  }).catch(function (e) {
+    PW = ''; $('loginErr').textContent = e.status === 401 ? 'That password is not right.' : e.message;
+  }).then(function () { $('loginBtn').disabled = false; $('loginBtn').textContent = 'Enter'; });
+}
+
+/* ---------- list ---------- */
+var FILTERS = [['all', 'All'], ['episode', 'Episodes'], ['poem', 'Poems'], ['free', 'Free'], ['paid', 'Subscribers'], ['draft', 'Drafts']];
+function matches(p) {
+  if (filter === 'episode' && p.kind === 'poem') return false;
+  if (filter === 'poem' && p.kind !== 'poem') return false;
+  if (filter === 'free' && p.audience !== 'free') return false;
+  if (filter === 'paid' && p.audience === 'free') return false;
+  if (filter === 'draft' && p.status !== 'draft') return false;
+  if (query) { var q = query.toLowerCase(); if ((p.title + ' ' + (p.subtitle || '')).toLowerCase().indexOf(q) < 0) return false; }
+  return true;
+}
+function renderList() {
+  $('chips').innerHTML = FILTERS.map(function (f) {
+    return '<button class="chip' + (filter === f[0] ? ' active' : '') + '" data-filter="' + f[0] + '" type="button">' + f[1] + '</button>';
+  }).join('');
+  var shown = posts.filter(matches).sort(function (a, b) { return b.date.localeCompare(a.date) || sortKey(b) - sortKey(a); });
+  $('rows').innerHTML = shown.length ? shown.map(function (p) {
+    return '<button class="row" data-id="' + esc(p.id) + '" type="button"><span class="tag">' + esc(tagOf(p)) + '</span>' +
+      '<span><div class="t">' + esc(p.title) + '</div><div class="s">' + esc(p.subtitle || '') + '</div></span>' +
+      '<span class="meta">' + (p.status === 'draft' ? '<span class="badge draft">Draft</span>' : '') +
+      '<span class="badge">' + (p.audience === 'free' ? 'Free' : 'Subscribers') + '</span><span>' + esc(p.date) + '</span></span></button>';
+  }).join('') : '<div class="empty">Nothing matches that.</div>';
+}
+
+/* ---------- cleaning pasted / edited HTML ---------- */
+var TAGS = { P: 'p', BR: 'br', STRONG: 'strong', B: 'strong', EM: 'em', I: 'em', A: 'a', H1: 'h2', H2: 'h2', H3: 'h3', H4: 'h4', H5: 'h4', H6: 'h4',
+  HR: 'hr', FIGURE: 'figure', FIGCAPTION: 'figcaption', IMG: 'img', BLOCKQUOTE: 'blockquote', UL: 'ul', OL: 'ol', LI: 'li', PRE: 'pre', CODE: 'code', DIV: 'p' };
+var VOID = { br: 1, hr: 1, img: 1 }, INLINE = { strong: 1, em: 1, a: 1, br: 1, code: 1 };
+function cleanChildren(from, to) {
+  for (var i = 0; i < from.childNodes.length; i++) {
+    var n = from.childNodes[i];
+    if (n.nodeType === 3) { to.appendChild(document.createTextNode(n.nodeValue)); continue; }
+    if (n.nodeType !== 1) continue;
+    var tag = n.tagName, st = n.getAttribute('style') || '';
+    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') continue;
+    if (tag === 'SPAN') {
+      var holder = to;
+      if (/font-weight:\s*(700|bold)/i.test(st)) { var strong = document.createElement('strong'); to.appendChild(strong); holder = strong; }
+      if (/font-style:\s*italic/i.test(st)) { var em = document.createElement('em'); holder.appendChild(em); holder = em; }
+      cleanChildren(n, holder); continue;
+    }
+    var t = TAGS[tag];
+    if (tag === 'B' && /font-weight:\s*normal/i.test(st)) t = null;         // Google Docs wrapper
+    if (!t) { cleanChildren(n, to); continue; }                              // unknown tag: keep its contents
+    if (t === 'p' && to.nodeName === 'P') { cleanChildren(n, to); continue; }
+    var el = document.createElement(t);
+    if (t === 'a') { var href = n.getAttribute('href') || ''; if (!/^(https?:|mailto:|\/|#)/i.test(href)) { cleanChildren(n, to); continue; } el.setAttribute('href', href); el.setAttribute('rel', 'noopener'); }
+    if (t === 'img') { var imgSrc = n.getAttribute('src') || ''; if (!imgSrc) continue; el.setAttribute('src', imgSrc); el.setAttribute('alt', n.getAttribute('alt') || ''); }
+    if (t === 'p' && n.classList && n.classList.contains('stanza')) el.className = 'stanza';
+    if (!VOID[t]) cleanChildren(n, el);
+    to.appendChild(el);
+  }
+}
+function hasContent(el) { return !!(el.textContent.trim() || el.querySelector('img,hr')); }
+function cleanHtml(html) {
+  var doc = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html');
+  var out = document.createElement('div'); cleanChildren(doc.body, out);
+  // flush inline runs in document order
+  var kids = Array.prototype.slice.call(out.childNodes); out.innerHTML = ''; var run = null;
+  function flush() { if (run && hasContent(run)) out.appendChild(run); run = null; }
+  kids.forEach(function (k) {
+    var inline = k.nodeType === 3 || (k.nodeType === 1 && INLINE[k.nodeName.toLowerCase()]);
+    if (inline) { if (k.nodeType === 3 && !k.nodeValue.trim() && !run) return; if (!run) run = document.createElement('p'); run.appendChild(k); }
+    else { flush(); if (k.nodeType === 1 && /^(P|H2|H3|H4)$/.test(k.nodeName) && !hasContent(k)) return; out.appendChild(k); }
+  });
+  flush();
+  return out.innerHTML;
+}
+function textToHtml(text) {
+  return text.replace(/\r/g, '').split(/\n{2,}/).map(function (para) { return para.trim() ? '<p>' + esc(para.trim()).replace(/\n/g, '<br>') + '</p>' : ''; }).join('');
+}
+function toEditor(html) { return html.replace(/(src=")(?!https?:|\/|data:|blob:)([^"]+)"/g, '$1../$2"'); }
+function fromEditor(html) {
+  return html.replace(/src="\.\.\/(assets\/[^"]+)"/g, 'src="$1"').replace(/src="(blob:[^"]+)"/g, function (m, u) { return 'src="' + (blobMap[u] || u) + '"'; });
+}
+function prettyHtml(html) { return html.replace(/(<\/(p|h2|h3|h4|figure|blockquote|ul|ol|pre)>|<hr\s*\/?>)/g, '$1\n\n').trim(); }
+
+/* ---------- edit form ---------- */
+function syncKindFields() {
+  var kind = $('f-kind').value, fin = $('f-finale').checked;
+  $('wrapSeason').classList.toggle('hidden', kind === 'poem');
+  $('wrapEpisode').classList.toggle('hidden', kind === 'poem');
+  $('wrapFinale').classList.toggle('hidden', kind !== 'episode');
+  $('f-episode').disabled = kind === 'episode' && fin;
+  $('lblSeason').textContent = kind === 'special' ? 'Sits in season' : 'Season';
+  $('lblEpisode').textContent = kind === 'special' ? 'After episode' : 'Episode';
+  var paid = $('f-audience').value === 'paid';
+  $('paywallNote').classList.toggle('hidden', !paid);
+  $('paywallNote').textContent = kind === 'poem'
+    ? 'Visitors who are not subscribed will see only the first stanza of this poem, followed by the subscribe box.'
+    : 'Visitors who are not subscribed will see only the first three paragraphs, followed by the subscribe box.';
+}
+function setThumb(url) {
+  var th = $('thumb');
+  if (!url) { th.style.backgroundImage = ''; th.textContent = 'No photo'; return; }
+  var src = /^(https?:|blob:|data:|\/)/i.test(url) ? url : '../' + url;
+  th.textContent = ''; th.style.backgroundImage = 'url("' + src.replace(/"/g, '%22') + '")';
+}
+function fillForm(p) {
+  $('f-title').value = p.title || ''; $('f-subtitle').value = p.subtitle || '';
+  $('f-kind').value = p.kind || 'episode'; $('f-season').value = p.season || ''; $('f-episode').value = p.episode || '';
+  $('f-finale').checked = !!p.finale; $('f-audience').value = p.audience === 'free' ? 'free' : 'paid';
+  $('f-status').value = p.status === 'draft' ? 'draft' : 'published'; $('f-date').value = p.date || today();
+  $('f-cover').value = p.cover || ''; setThumb(p.cover);
+  var b = toEditor(p.body || ''); $('body').innerHTML = b || '<p><br></p>';
+  Array.prototype.forEach.call($('body').querySelectorAll('figure'), function (f) {
+    f.contentEditable = 'false'; var im = f.querySelector('img');
+    if (im) im.addEventListener('error', function () { f.classList.add('broken'); });
+  });
+  setHtmlMode(false); syncKindFields();
+  var link = $('openPage'); if (!isNew && p.slug && p.status !== 'draft') { link.href = '/read/' + p.slug + '.html'; link.classList.remove('hidden'); } else link.classList.add('hidden');
+  $('save').textContent = isNew ? (p.status === 'draft' ? 'Save draft' : 'Publish') : 'Save changes';
+}
+function readForm() {
+  var body = htmlMode ? $('bodyHtml').value : $('body').innerHTML;
+  var kind = $('f-kind').value, fin = $('f-finale').checked && kind === 'episode';
+  var p = {
+    id: current && current.id, slug: current && current.slug,
+    title: $('f-title').value.trim(), subtitle: $('f-subtitle').value.trim(), kind: kind,
+    season: kind === 'poem' ? null : parseInt($('f-season').value, 10) || 1,
+    episode: kind === 'poem' || fin ? null : parseInt($('f-episode').value, 10) || 1, finale: fin,
+    audience: $('f-audience').value, status: $('f-status').value, date: $('f-date').value,
+    cover: $('f-cover').value.trim(), body: fromEditor(cleanHtml(body)),
+  };
+  return p;
+}
+function setDirty(v) {
+  dirty = v; $('save').disabled = false;
+  if (v) { clearTimeout(backupTimer); backupTimer = setTimeout(saveBackup, 1200); }
+}
+function backupKey() { return 'wss-backup-' + (isNew ? 'new-' + $('f-kind').value : current.id); }
+function saveBackup() { try { localStorage.setItem(backupKey(), JSON.stringify({ at: Date.now(), post: readForm() })); } catch (e) {} }
+function clearBackup(key) { try { localStorage.removeItem(key || backupKey()); } catch (e) {} }
+
+function openPost(id) {
+  current = posts.filter(function (p) { return p.id === id; })[0]; if (!current) return;
+  isNew = false; fillForm(current); dirty = false;
+  try {
+    var raw = localStorage.getItem('wss-backup-' + id);
+    if (raw) { var b = JSON.parse(raw); if (confirm('You have unsaved edits to this post from ' + new Date(b.at).toLocaleString() + '. Restore them?')) { fillForm(b.post); setDirty(true); } else clearBackup('wss-backup-' + id); }
+  } catch (e) {}
+  show('edit');
+}
+function newPost(kind) {
+  var eps = posts.filter(function (p) { return p.kind === 'episode' && !p.finale; });
+  var season = eps.reduce(function (m, p) { return Math.max(m, p.season || 1); }, 1);
+  var nextEp = eps.filter(function (p) { return p.season === season; }).reduce(function (m, p) { return Math.max(m, p.episode || 0); }, 0) + 1;
+  current = { kind: kind, season: kind === 'poem' ? null : season, episode: kind === 'poem' ? null : nextEp, audience: 'paid', status: 'published', date: today(), title: '', subtitle: '', cover: '', body: '' };
+  isNew = true; fillForm(current); dirty = false; show('edit'); $('f-title').focus();
+}
+function leaveEdit() {
+  if (dirty && !confirm('You have changes that are not saved. Leave without saving?')) return;
+  if (dirty) clearBackup();
+  dirty = false; current = null; renderList(); show('list');
+}
+
+function save() {
+  var p = readForm();
+  if (!p.title) { toast('Please add a title first.', 'error'); $('f-title').focus(); return; }
+  if (!p.date) { toast('Please choose a date.', 'error'); return; }
+  $('save').disabled = true; var label = $('save').textContent; $('save').textContent = 'Saving\u2026';
+  var wasNew = isNew, key = backupKey();
+  api('admin-save', { post: p, isNew: isNew }).then(function (r) {
+    var s = r.post;
+    if (wasNew) posts.push(s); else posts = posts.map(function (x) { return x.id === s.id ? s : x; });
+    current = s; isNew = false; dirty = false; clearBackup(key); fillForm(s);
+    toast(DEMO ? 'Demo: saved on this page only, nothing was sent.' : (s.status === 'draft' ? 'Draft saved.' : 'Saved. The live site updates in about a minute.'), 'ok');
+  }).catch(function (e) {
+    if (e.status === 401) { toast('Your session ended. Please log in again.', 'error'); logout(); return; }
+    toast(e.message, 'error'); $('save').textContent = label;
+  }).then(function () { $('save').disabled = false; });
+}
+
+/* ---------- writing tools ---------- */
+function setHtmlMode(on) {
+  htmlMode = on; $('body').classList.toggle('hidden', on); $('bodyHtml').classList.toggle('hidden', !on);
+  Array.prototype.forEach.call(document.querySelectorAll('.tb'), function (b) { if (b.dataset.cmd !== 'html') b.disabled = on; });
+  document.querySelector('.tb[data-cmd="html"]').classList.toggle('on', on);
+}
+function toggleHtml() {
+  if (!htmlMode) { $('bodyHtml').value = prettyHtml(fromEditor(cleanHtml($('body').innerHTML))); setHtmlMode(true); }
+  else { $('body').innerHTML = toEditor(cleanHtml($('bodyHtml').value)) || '<p><br></p>'; setHtmlMode(false); }
+}
+function currentBlock() {
+  var sel = window.getSelection(); if (!sel.rangeCount) return null; var n = sel.anchorNode; var box = $('body');
+  while (n && n.parentNode !== box) n = n.parentNode;
+  return n && n.nodeType === 1 ? n : null;
+}
+function command(cmd) {
+  $('body').focus();
+  if (cmd === 'bold' || cmd === 'italic') document.execCommand(cmd);
+  else if (cmd === 'link') {
+    var sel = window.getSelection(); var a = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentNode).closest('a');
+    if (a) document.execCommand('unlink'); else { var u = prompt('Link address (starting with https://)'); if (u) document.execCommand('createLink', false, u); }
+  }
+  else if (cmd === 'heading') { var b = currentBlock(); document.execCommand('formatBlock', false, b && b.tagName === 'H3' ? 'p' : 'h3'); }
+  else if (cmd === 'stanza') {
+    var blk = currentBlock(); if (!blk) return;
+    if (blk.tagName !== 'P') { document.execCommand('formatBlock', false, 'p'); blk = currentBlock(); }
+    if (blk) blk.classList.toggle('stanza');
+  }
+  else if (cmd === 'divider') document.execCommand('insertHorizontalRule');
+  else if (cmd === 'image') { $('filePick').dataset.target = 'body'; $('filePick').click(); return; }
+  setDirty(true);
+}
+
+/* ---------- images ---------- */
+function compress(file) {
+  return new Promise(function (resolve, reject) {
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function () {
+      var max = 1800, s = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(function (blob) { URL.revokeObjectURL(url); blob ? resolve(blob) : reject(new Error('That image could not be read.')); }, 'image/jpeg', 0.86);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('That file does not look like an image the browser can open. A JPG or PNG works best.')); };
+    img.src = url;
+  });
+}
+function blobToBase64(blob) {
+  return new Promise(function (resolve, reject) { var r = new FileReader(); r.onload = function () { resolve(String(r.result).split(',')[1]); }; r.onerror = reject; r.readAsDataURL(blob); });
+}
+function uploadImage(file) {
+  toast('Uploading photo\u2026');
+  return compress(file).then(function (blob) {
+    return blobToBase64(blob).then(function (data) {
+      return api('admin-upload', { filename: file.name, data: data }).then(function (r) {
+        var local = URL.createObjectURL(blob); blobMap[local] = r.url; return { url: r.url, local: local };
+      });
+    });
+  });
+}
+function afterPick(file, target) {
+  uploadImage(file).then(function (r) {
+    if (target === 'cover') { $('f-cover').value = r.url; setThumb(r.local); }
+    else { $('body').focus(); document.execCommand('insertHTML', false, '<figure contenteditable="false"><img src="' + r.local + '" alt=""></figure><p><br></p>'); }
+    setDirty(true); toast('Photo added.', 'ok');
+  }).catch(function (e) { if (e.status === 401) { logout(); } toast(e.message, 'error'); });
+}
+
+/* ---------- wiring ---------- */
+$('loginForm').addEventListener('submit', function (e) { e.preventDefault(); if ($('pw').value) login($('pw').value); });
+$('logout').addEventListener('click', function () { if (!dirty || confirm('You have unsaved changes. Log out anyway?')) logout(); });
+$('search').addEventListener('input', function (e) { query = e.target.value.trim(); renderList(); });
+$('chips').addEventListener('click', function (e) { var b = e.target.closest('[data-filter]'); if (b) { filter = b.dataset.filter; renderList(); } });
+$('rows').addEventListener('click', function (e) { var b = e.target.closest('.row'); if (b) openPost(b.dataset.id); });
+Array.prototype.forEach.call(document.querySelectorAll('[data-new]'), function (b) { b.addEventListener('click', function () { newPost(b.dataset.new); }); });
+$('back').addEventListener('click', leaveEdit);
+$('save').addEventListener('click', save);
+$('toolbar').addEventListener('mousedown', function (e) { if (e.target.closest('.tb')) e.preventDefault(); });   // keep the text selection
+$('toolbar').addEventListener('click', function (e) { var b = e.target.closest('.tb'); if (!b || b.disabled) return; if (b.dataset.cmd === 'html') toggleHtml(); else command(b.dataset.cmd); });
+$('f-kind').addEventListener('change', function () { syncKindFields(); if (isNew) $('save').textContent = 'Publish'; setDirty(true); });
+['f-finale', 'f-audience'].forEach(function (id) { $(id).addEventListener('change', function () { syncKindFields(); setDirty(true); }); });
+['f-title', 'f-subtitle', 'f-season', 'f-episode', 'f-date', 'f-status', 'bodyHtml'].forEach(function (id) { $(id).addEventListener('input', function () { setDirty(true); }); });
+$('f-cover').addEventListener('input', function () { setThumb($('f-cover').value.trim()); setDirty(true); });
+$('body').addEventListener('input', function () { setDirty(true); });
+$('body').addEventListener('paste', function (e) {
+  e.preventDefault(); var cd = e.clipboardData || window.clipboardData, h = cd.getData('text/html'), t = cd.getData('text/plain');
+  document.execCommand('insertHTML', false, h ? cleanHtml(h) : textToHtml(t));
+});
+$('body').addEventListener('click', function (e) {
+  Array.prototype.forEach.call($('body').querySelectorAll('figure.sel'), function (f) { f.classList.remove('sel'); });
+  var fig = e.target.closest && e.target.closest('figure'); if (fig) fig.classList.add('sel');
+});
+$('body').addEventListener('keydown', function (e) {
+  if ((e.key === 'Delete' || e.key === 'Backspace')) { var f = $('body').querySelector('figure.sel'); if (f) { e.preventDefault(); f.remove(); setDirty(true); } }
+});
+$('uploadCover').addEventListener('click', function () { $('filePick').dataset.target = 'cover'; $('filePick').click(); });
+$('clearCover').addEventListener('click', function () { $('f-cover').value = ''; setThumb(''); setDirty(true); });
+$('filePick').addEventListener('change', function (e) { var f = e.target.files[0]; var t = e.target.dataset.target; e.target.value = ''; if (f) afterPick(f, t); });
+document.addEventListener('keydown', function (e) { if ((e.metaKey || e.ctrlKey) && e.key === 's' && !$('editView').classList.contains('hidden')) { e.preventDefault(); save(); } });
+window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
+
+/* ---------- start ---------- */
+if (DEMO) { $('demoBanner').classList.remove('hidden'); $('pw').placeholder = 'Demo: type anything'; $('viewSite').classList.add('hidden'); }
+else if (location.protocol === 'file:') { $('loginErr').textContent = 'This page needs to be on your live site to work.'; $('loginBtn').disabled = true; }
+else if (PW) { login(PW); }
+window.__wss = { cleanHtml: cleanHtml, textToHtml: textToHtml, toEditor: toEditor, fromEditor: fromEditor, state: function () { return { posts: posts, current: current, isNew: isNew, dirty: dirty }; } };
+})();
+</script>
+</body>
+</html>
