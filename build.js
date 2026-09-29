@@ -175,6 +175,7 @@ ${x.cover ? `<meta property="og:image" content="${esc(absUrl(x.cover))}">\n<meta
   <h1>${esc(x.title)}</h1>
   <p class="dek">${esc(x.subtitle)}</p>
   <div class="byline">Sheridan Guerrette<span class="sep">&middot;</span>${fmtDate(x.date)}</div>
+  <p class="read-sub-line">Subscribers get every episode and poem, including the ones I don't give away anywhere else. <a href="../index.html#top">Subscribe &rarr;</a></p>
 </div>
 
 ${cover ? `<div class="read-cover"><img src="${esc(cover)}" alt="${esc(x.title)}" onerror="this.parentNode.remove()"></div>` : ''}
@@ -188,6 +189,31 @@ ${isPaid(x) ? gate(x) : ''}
   ${navLink(prev, '&larr; Previous', '')}
   ${navLink(next, 'Next &rarr;', 'next-wrap')}
 </div>
+
+<section class="draw-in draw-in-photo">
+  <div class="draw-in-inner">
+    <figure class="feature-photo"><img src="../assets/feature.jpg" alt="Sheridan Guerrette in a knit dress blowing a kiss to her reflection in an elevator mirror, black and white photo" width="1297" height="1730" loading="lazy"></figure>
+    <div class="feature-copy">
+      <h2>Still Here? Good.</h2>
+      <p>New episodes and poems land in your inbox as they're written &mdash; no algorithm between you and the words.</p>
+      <p class="feature-line">Subscribers get every episode and every poem, including the ones I don't give away anywhere else.</p>
+      <form class="subscribe-form on-light" id="drawInSubscribe">
+        <input type="email" placeholder="Your email" required>
+        <button type="submit">Subscribe</button>
+        <div class="form-note">You're on the list &mdash; welcome.</div>
+      </form>
+      <div class="threads" id="homeThreads">
+        <button type="button" class="thread-link" data-thread="love-interest">Love Interest</button>
+        <button type="button" class="thread-link" data-thread="heroine-arc">The Heroine Arc</button>
+        <button type="button" class="thread-link" data-thread="b-roll">B-Roll</button>
+      </div>
+      <div class="thread-nudge" id="threadNudge" style="display:none">
+        <span id="threadNudgeText"></span>
+        <button type="button" id="threadNudgeGo">Take me there &rarr;</button>
+      </div>
+    </div>
+  </div>
+</section>
 
 ${FOOTER('../')}
 

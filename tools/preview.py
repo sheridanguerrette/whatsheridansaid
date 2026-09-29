@@ -11,8 +11,7 @@ def prep(s, depth):
     b = b.replace('href="%sindex.html#top"' % pre, 'href="#" data-go="home"').replace('href="%sindex.html"' % pre, 'href="#" data-go="home"')
     b = b.replace('href="%spoetry.html"' % pre, 'href="#" data-go="poetry"')
     b = b.replace('href="%sabout.html"' % pre, 'href="#" data-go="about"')
-    for pg in ('archive',):
-        b = b.replace('href="%s%s.html"' % (pre, pg), 'href="#"')
+    b = b.replace('href="%sarchive.html"' % pre, 'href="#" data-go="archive"')
     b = b.replace('src="assets/hero.jpg"', 'src="'+HERO+'"').replace('src="assets/feature.jpg"', 'src="'+FEAT+'"').replace('src="assets/about-spotlight.jpg"', 'src="'+ASPOT+'"').replace('src="assets/poetry-hero-real.jpg"', 'src="'+POET+'"')
     b = re.sub(r'src="(?:\.\./)?assets/[^"]+"', 'src=""', b)
     b = re.sub(r'href="(?:read/)?([a-z0-9\-]+)\.html"', r'href="#\1" data-go="\1"', b)
@@ -23,6 +22,7 @@ for f in sorted(glob.glob('dist/read/*.html')):
 pages['home'] = prep(open('dist/index.html').read(), 0)
 pages['poetry'] = prep(open('dist/poetry.html').read(), 0)
 pages['about'] = prep(open('dist/about.html').read(), 0)
+pages['archive'] = prep(open('dist/archive.html').read(), 0)
 _i = js.index('// ---------- subscribe forms')
 JS1 = js[:_i] + '})();'
 JS2 = '(function(){' + js[_i:]

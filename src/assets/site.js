@@ -88,6 +88,38 @@
     }, 6000);
   }
 
+  // ---------- homepage: "sure you don't want to subscribe first?" nudge on the thread buttons ----------
+  (function(){
+    var threadsBox = document.getElementById('homeThreads');
+    var nudge = document.getElementById('threadNudge');
+    var nudgeText = document.getElementById('threadNudgeText');
+    var nudgeGo = document.getElementById('threadNudgeGo');
+    if(!threadsBox || !nudge) return;
+    var LABELS = { 'love-interest': 'Love Interest', 'heroine-arc': 'The Heroine Arc', 'b-roll': 'B-Roll' };
+    var armed = null;
+    function reset(){
+      armed = null; nudge.style.display = 'none';
+      threadsBox.querySelectorAll('.thread-link').forEach(function(b){ b.classList.remove('armed'); });
+    }
+    threadsBox.querySelectorAll('.thread-link').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var thread = btn.getAttribute('data-thread');
+        if(armed === thread){
+          window.location.href = 'archive.html?thread=' + encodeURIComponent(thread);
+          return;
+        }
+        reset();
+        armed = thread; btn.classList.add('armed');
+        nudgeText.textContent = 'Sure you don\u2019t want to subscribe first?';
+        nudgeGo.textContent = 'Take me to ' + LABELS[thread] + ' \u2192';
+        nudge.style.display = 'flex';
+      });
+    });
+    nudgeGo.addEventListener('click', function(){
+      if(armed) window.location.href = 'archive.html?thread=' + encodeURIComponent(armed);
+    });
+  })();
+
   // ---------- sliders (fixed-count rows with arrow controls) ----------
   document.querySelectorAll('.slider-wrap').forEach(function(wrap){
     var row = wrap.querySelector('.row');
@@ -114,7 +146,15 @@
     var cards = Array.prototype.slice.call(archiveGrid.querySelectorAll('.card'));
     var PAGE_SIZE = 20;
 
-    var state = { thread: 'all', season: 'all', sort: 'desc', page: 1 };
+    var params = new URLSearchParams(window.location.search);
+    var urlThread = params.get('thread');
+    var VALID_THREADS = ['love-interest', 'heroine-arc', 'b-roll'];
+    var state = { thread: (urlThread && VALID_THREADS.indexOf(urlThread) > -1) ? urlThread : 'all', season: 'all', sort: 'desc', page: 1 };
+    if(state.thread !== 'all'){
+      document.querySelectorAll('.filter-tabs [data-thread]').forEach(function(b){
+        b.classList.toggle('active', b.getAttribute('data-thread') === state.thread);
+      });
+    }
 
     function sortKey(card){
       return parseInt(card.getAttribute('data-season'), 10) * 1000 + parseInt(card.getAttribute('data-episode'), 10);

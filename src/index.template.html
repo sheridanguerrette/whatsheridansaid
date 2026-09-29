@@ -96,10 +96,14 @@
         <button type="submit">Subscribe</button>
         <div class="form-note">You're on the list &mdash; welcome.</div>
       </form>
-      <div class="threads">
-        <span>Love Interest</span>
-        <span>The Heroine Arc</span>
-        <span>B-Roll</span>
+      <div class="threads" id="homeThreads">
+        <button type="button" class="thread-link" data-thread="love-interest">Love Interest</button>
+        <button type="button" class="thread-link" data-thread="heroine-arc">The Heroine Arc</button>
+        <button type="button" class="thread-link" data-thread="b-roll">B-Roll</button>
+      </div>
+      <div class="thread-nudge" id="threadNudge" style="display:none">
+        <span id="threadNudgeText"></span>
+        <button type="button" id="threadNudgeGo">Take me there &rarr;</button>
       </div>
     </div>
   </div>
