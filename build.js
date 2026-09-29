@@ -159,9 +159,10 @@ ${x.cover ? `<meta property="og:image" content="${esc(absUrl(x.cover))}">\n<meta
 </head>
 <body>
 
+<span id="top" style="position:absolute;top:0;left:0;width:1px;height:1px;"></span>
 <div class="cursor-heart" id="cursorHeart">&#9825;</div>
 
-<header id="top">
+<header>
   <a class="logo" href="../index.html">WHAT SHERIDAN SAID</a>
   <nav><ul>
     <li><a href="../index.html">Home</a></li><li><a href="../archive.html">Archive</a></li>
