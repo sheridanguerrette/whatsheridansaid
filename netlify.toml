@@ -10,6 +10,16 @@
 [functions]
   node_bundler = "esbuild"
 
+# Episode/poem pages are served live from this function instead of the static file
+# saved during the last deploy, so editing a post in the Write page shows up on
+# the next page view immediately -- no rebuild, no deploy, no credits spent.
+[[redirects]]
+  from = "/read/:slug.html"
+  to = "/.netlify/functions/read"
+  status = 200
+  force = true
+  query = {slug = ":slug"}
+
 [[headers]]
   for = "/write/*"
   [headers.values]

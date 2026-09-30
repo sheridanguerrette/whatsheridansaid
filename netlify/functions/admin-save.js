@@ -1,8 +1,11 @@
 'use strict';
 const { json, authorize, readPosts, writePosts } = require('../../lib/github');
 const { normalizePost } = require('../../lib/content');
+const { setCachedPosts } = require('../../lib/content-cache');
 
-// Creates or updates one post, then commits content/posts.json. Netlify rebuilds the site from that commit.
+// Creates or updates one post, then commits content/posts.json to GitHub (the
+// permanent record) and refreshes the fast read cache the live read/:slug pages
+// use, so the edit shows up immediately -- no site rebuild, no deploy, no cost.
 exports.handler = async (event) => {
   const denied = await authorize(event); if (denied) return denied;
   let payload; try { payload = JSON.parse(event.body || '{}'); } catch (e) { return json(400, { error: 'Bad request.' }); }
@@ -23,6 +26,7 @@ exports.handler = async (event) => {
         posts[idx] = saved;
       }
       await writePosts(posts, sha, `${isNew ? 'New post' : 'Edit'}: ${saved.title}`);
+      try { await setCachedPosts(posts); } catch (e) { /* GitHub save already succeeded; cache refresh is best-effort */ }
       return json(200, { ok: true, post: saved });
     } catch (e) {
       if (e.status === 409 || e.status === 422) continue;          // file changed under us - re-read and retry
