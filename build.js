@@ -86,18 +86,17 @@ function spotlightImage(x) {
   const imgs = [...(x.body || '').matchAll(/<img[^>]+src="([^"]+)"/g)].map((m) => m[1]).filter((u) => { const e = dims(u); return e && e[0] / e[1] < 1.6; });
   return imgs[0] || x.cover || '';
 }
-const recent = [...episodes].filter((x) => x.kind === 'episode' && !x.finale).reverse().slice(0, 8);
+const recent = [...episodes].filter((x) => x.kind === 'episode' && !x.finale).reverse().slice(0, 4);
 const pick = pickPosts([HOME.pick], 'pick')[0] || recent[0];
 const SUBSTACK_PAID = 'https://whatsheridansaid.substack.com/subscribe';
-const pickHtml = `<section class="spotlight">
-  <div class="spotlight-inner">
-    <div class="spotlight-cover letter-card"><div class="lc-inner"><span class="lc-heart">&#9825;</span><span class="lc-line">Postmarked the last day of every month</span></div></div>
-    <div class="spotlight-text">
-      <div class="eyebrow">For Paid Members</div>
-      <h2>A Handwritten Poem and Letter, in Your Mailbox</h2>
-      <p>On the last day of every month, I mail paid members a poem and a letter in my own handwriting. Anywhere in the world. $8 a month or $80 a year.</p>
-      <a href="${SUBSTACK_PAID}" class="cta" target="_blank" rel="noopener">Become a Paid Member</a>
-    </div>
+const pickHtml = `<section class="member-banner">
+  <img class="mb-photo" src="assets/about-spotlight.jpg" alt="Sheridan Guerrette in sunglasses and a white collared blazer, laughing on a city street, black and white photo" width="1400" height="933" loading="lazy">
+  <div class="mb-shade"></div>
+  <div class="mb-copy">
+    <div class="eyebrow">For Paid Members</div>
+    <h2>A Handwritten Poem and Letter, in Your Mailbox</h2>
+    <p>On the last day of every month, I mail paid members a poem and a letter in my own handwriting. Anywhere in the world. $8 a month or $80 a year.</p>
+    <a href="${SUBSTACK_PAID}" class="cta" target="_blank" rel="noopener">Become a Paid Member</a>
   </div>
 </section>`;
 
@@ -134,7 +133,6 @@ fill('poetry.template.html', 'poetry.html', {
 fill('index.template.html', 'index.html', {
   '<!--HOME_RECENT-->': recent.map(cardOf).join('\n'),
   '<!--HOME_PICK-->': pickHtml,
-  '<!--HOME_FEATURED_EPISODES-->': pickPosts(HOME.featuredEpisodes, 'featuredEpisodes').map(cardOf).join('\n'),
   '<!--HOME_FEATURED_POEMS-->': pickPosts(HOME.featuredPoems, 'featuredPoems').map(cardOf).join('\n'),
 });
 

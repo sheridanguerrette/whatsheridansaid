@@ -1227,8 +1227,19 @@ footer .fine-print .copyright{
   .about-spotlight .as-photo{ max-width:320px; margin:0 auto; }
 }
 
-/* ---------- paid-membership banner: the letter card ---------- */
-.spotlight-cover.letter-card{ background:#0a0a0a; border:none; display:flex; align-items:center; justify-content:center; padding:30px; }
-.letter-card .lc-inner{ display:flex; flex-direction:column; align-items:center; gap:22px; text-align:center; }
-.letter-card .lc-heart{ font-size:46px; color:#f5f5f2; line-height:1; }
-.letter-card .lc-line{ font-family:'Gloock',serif; font-size:clamp(20px,2.2vw,28px); color:#f5f5f2; max-width:11em; line-height:1.25; }
+/* ---------- paid-membership banner: full-bleed photo with the pitch over it ---------- */
+.member-banner{ position:relative; overflow:hidden; background:#0a0a0a; min-height:clamp(520px,52vw,700px); display:flex; align-items:center; }
+.member-banner .mb-photo{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:60% 0%; filter:grayscale(1); }
+.member-banner .mb-shade{ position:absolute; inset:0; background:linear-gradient(90deg, rgba(10,10,10,0.94) 0%, rgba(10,10,10,0.86) 28%, rgba(10,10,10,0.55) 46%, rgba(10,10,10,0.1) 66%, rgba(10,10,10,0) 80%); }
+.member-banner .mb-copy{ position:relative; z-index:2; max-width:520px; padding:70px 6vw; margin-left:max(0px,calc((100vw - 1200px)/2)); color:#f5f5f2; }
+.member-banner .eyebrow{ font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:#b9b9b3; margin-bottom:16px; }
+.member-banner h2{ font-family:'Gloock',serif; font-weight:400; font-size:clamp(30px,3.6vw,48px); line-height:1.1; margin:0 0 18px; }
+.member-banner p{ font-size:16px; line-height:1.7; color:#dcdcd6; margin:0 0 28px; }
+.member-banner .cta{ display:inline-block; background:#f5f5f2; color:#0a0a0a; padding:15px 28px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; text-decoration:none; }
+.member-banner .cta:hover{ opacity:0.82; }
+@media (max-width:760px){
+  .member-banner{ min-height:560px; align-items:flex-end; }
+  .member-banner .mb-photo{ object-position:62% 0%; }
+  .member-banner .mb-shade{ background:linear-gradient(0deg, rgba(10,10,10,0.96) 0%, rgba(10,10,10,0.88) 45%, rgba(10,10,10,0.1) 80%); }
+  .member-banner .mb-copy{ padding:40px 6vw 50px; }
+}
