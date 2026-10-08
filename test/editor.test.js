@@ -51,6 +51,8 @@ test('log in, browse, search and filter all posts', async () => {
   assert.equal(b.visible('listView'), true); assert.equal(b.rows().length, 58);
   b.type('search', 'mr. cigar'); assert.equal(b.rows().length, 1); b.type('search', '');
   b.d.querySelector('[data-filter="poem"]').click(); assert.equal(b.rows().length, 12);
+  b.d.querySelector('[data-filter="needs"]').click(); assert.equal(b.rows().length > 0, true); assert.match(b.$('rows').innerHTML, /Imported photo/);
+  assert.ok(b.d.querySelector('.row .rthumb img'));
   b.d.querySelector('[data-filter="draft"]').click(); assert.match(b.$('rows').textContent, /Nothing matches/);
   assert.deepEqual(b.errors, []);
 });
