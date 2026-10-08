@@ -126,6 +126,7 @@ const poemsNewest = [...poems].reverse();
 const SLIDER_N = 8;
 const ordinal = new Map(poems.map((x, i) => [x.slug, i + 1])); // page script sorts newest-first by this
 fill('poetry.template.html', 'poetry.html', {
+  '<!--POEMS_PICKS-->': pickPosts(HOME.poetryPicks || HOME.featuredPoems, 'poetryPicks').map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
   '<!--POEMS_FREE-->': poemsNewest.slice(0, SLIDER_N).map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
   '<!--POEMS_PAID-->': poemsNewest.slice(SLIDER_N).map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
 });
