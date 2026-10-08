@@ -41,12 +41,23 @@
     }
   }
 
-  // ---------- subscribe forms (front-end only for now) ----------
+  // ---------- subscribe forms: save the email so it can be added to Substack ----------
   function wireSubscribeForm(form){
     if(!form) return;
     form.addEventListener('submit', function(e){
       e.preventDefault();
+      var input = form.querySelector('input[type="email"]');
+      var email = input ? input.value.trim() : '';
+      if(!email) return;
+      var page = (location.pathname.split('/').pop() || 'home').replace('.html','') || 'home';
       form.classList.add('submitted');
+      try {
+        fetch('/.netlify/functions/subscribe', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ email: email, source: page })
+        }).catch(function(){});
+      } catch(err) {}
     });
   }
   document.querySelectorAll('.subscribe-form').forEach(wireSubscribeForm);

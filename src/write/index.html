@@ -143,7 +143,7 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
   <div class="bar">
     <div class="brand">WHAT SHERIDAN SAID<span>Editor</span></div>
     <div class="bar-actions">
-      <button class="btn small" id="navSubs" type="button">Subscribers</button>
+      <button class="btn small" id="navSubs" type="button">Signups</button>
       <a class="btn small" href="/" id="viewSite" target="_blank" rel="noopener">View site</a>
       <button class="btn small" id="logout" type="button">Log out</button>
     </div>
@@ -166,27 +166,18 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
     <div class="rows" id="rows"></div>
   </main>
 
-  <!-- subscribers -->
+  <!-- signups -->
   <main id="subsView" class="wrap hidden">
     <div class="list-head">
-      <h2>Subscribers</h2>
+      <h2>Signups</h2>
       <button class="btn small" id="backFromSubs" type="button">&larr; All posts</button>
     </div>
-    <div class="sub-form">
-      <div class="list-head"><h2 style="font-size:1.2rem">Add or gift a subscriber</h2></div>
-      <div class="hint" style="margin-bottom:18px">Use this for a Substack subscriber you're honoring here, a transferred subscription, or any free gift of access. No card is ever involved &mdash; you set the status and end date yourself.</div>
-      <div class="grid">
-        <div class="field"><label for="s-email">Email</label><input type="text" id="s-email" placeholder="reader@email.com"></div>
-        <div class="field"><label for="s-status">Status</label>
-          <select id="s-status"><option value="active">Active (full access)</option><option value="trialing">Trialing</option><option value="free">Free tier (no paid access)</option><option value="canceled">Canceled</option><option value="expired">Expired</option></select></div>
-        <div class="field"><label for="s-expires">Access ends (leave blank for no end date)</label><input type="date" id="s-expires"></div>
-        <div class="field"><label for="s-source">Source</label><input type="text" id="s-source" placeholder="e.g. wix-transfer, substack, gift"></div>
-      </div>
-      <div class="field"><label for="s-note">Note to yourself (not shown to the subscriber)</label><textarea id="s-note" rows="2"></textarea></div>
-      <label class="check"><input type="checkbox" id="s-notify" checked> Email them a link to log straight in</label>
-      <div class="new-btns" style="margin-top:18px"><button class="btn primary small" id="s-submit" type="button">Save subscriber</button></div>
+    <div class="hint" style="margin-bottom:18px">Emails people typed into the subscribe boxes on the site. Copy the new ones into Substack, then tick them off here so you can see what's left.</div>
+    <div class="new-btns" style="margin-bottom:18px">
+      <button class="btn small" id="copyNew" type="button">Copy new emails</button>
+      <button class="btn small" id="copyAll" type="button">Copy all emails</button>
+      <button class="btn small" id="downloadCsv" type="button">Download CSV</button>
     </div>
-    <div class="list-head" style="margin-top:34px"><h2 style="font-size:1.2rem">Everyone</h2></div>
     <div class="rows" id="subRows"></div>
   </main>
 
@@ -215,8 +206,6 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
       <div class="field" id="wrapSeason"><label for="f-season" id="lblSeason">Season</label><input type="number" id="f-season" min="1"></div>
       <div class="field" id="wrapEpisode"><label for="f-episode" id="lblEpisode">Episode</label><input type="number" id="f-episode" min="1"></div>
       <label class="check" id="wrapFinale"><input type="checkbox" id="f-finale"> Season finale</label>
-      <div class="field"><label for="f-audience">Who can read it</label>
-        <select id="f-audience"><option value="free">Free for everyone</option><option value="paid">Subscribers only</option></select></div>
       <div class="field" id="wrapThread"><label for="f-thread">Thread</label>
         <select id="f-thread"><option value="">Not tagged yet</option><option value="love-interest">Love Interest</option><option value="heroine-arc">The Heroine Arc</option><option value="b-roll">B-Roll</option></select></div>
       <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
@@ -248,7 +237,6 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
       <button class="tb" data-cmd="image" title="Insert a photo" type="button">Photo</button>
       <button class="tb" data-cmd="html" title="Edit the raw HTML" type="button" style="margin-left:auto">&lt;/&gt;</button>
     </div>
-    <div class="paywall-note hidden" id="paywallNote"></div>
     <div id="body" contenteditable="true" spellcheck="true" aria-label="Post text"></div>
     <textarea id="bodyHtml" class="hidden" spellcheck="false" aria-label="Post HTML"></textarea>
     <input type="file" id="filePick" accept="image/*" class="hidden">
@@ -296,9 +284,8 @@ function demoApi(name, payload) {
       return resolve({ ok: true, post: p });
     }
     if (name === 'admin-upload') return resolve({ ok: true, url: 'assets/uploads/demo-' + Date.now() + '.jpg' });
-    if (name === 'admin-subs-list') return resolve({ subscribers: window.__DEMO_SUBS__ || [] });
-    if (name === 'admin-subs-upsert') return resolve({ ok: true });
-    if (name === 'admin-subs-delete') return resolve({ ok: true });
+    if (name === 'admin-signups-list') return resolve({ signups: window.__DEMO_SUBS__ || [] });
+    if (name === 'admin-signups-update') return resolve({ ok: true });
     resolve({});
   }, 450); });
 }
@@ -326,12 +313,10 @@ function login(pw) {
 }
 
 /* ---------- list ---------- */
-var FILTERS = [['all', 'All'], ['episode', 'Episodes'], ['poem', 'Poems'], ['free', 'Free'], ['paid', 'Subscribers'], ['draft', 'Drafts']];
+var FILTERS = [['all', 'All'], ['episode', 'Episodes'], ['poem', 'Poems'], ['draft', 'Drafts']];
 function matches(p) {
   if (filter === 'episode' && p.kind === 'poem') return false;
   if (filter === 'poem' && p.kind !== 'poem') return false;
-  if (filter === 'free' && p.audience !== 'free') return false;
-  if (filter === 'paid' && p.audience === 'free') return false;
   if (filter === 'draft' && p.status !== 'draft') return false;
   if (query) { var q = query.toLowerCase(); if ((p.title + ' ' + (p.subtitle || '')).toLowerCase().indexOf(q) < 0) return false; }
   return true;
@@ -345,53 +330,51 @@ function renderList() {
     return '<button class="row" data-id="' + esc(p.id) + '" type="button"><span class="tag">' + esc(tagOf(p)) + '</span>' +
       '<span><div class="t">' + esc(p.title) + '</div><div class="s">' + esc(p.subtitle || '') + '</div></span>' +
       '<span class="meta">' + (p.status === 'draft' ? '<span class="badge draft">Draft</span>' : '') +
-      '<span class="badge">' + (p.audience === 'free' ? 'Free' : 'Subscribers') + '</span><span>' + esc(p.date) + '</span></span></button>';
+      '<span>' + esc(p.date) + '</span></span></button>';
   }).join('') : '<div class="empty">Nothing matches that.</div>';
 }
 
-/* ---------- subscribers ---------- */
-var subscribers = [];
-function fmtDate(iso) { if (!iso) return 'No end date'; var d = new Date(iso); return isNaN(d) ? iso : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); }
-function loadSubscribers() {
+/* ---------- signups ---------- */
+var signups = [];
+function fmtWhen(iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); }
+function loadSignups() {
   $('subRows').innerHTML = '<div class="empty">Loading&hellip;</div>';
-  return api('admin-subs-list').then(function (d) { subscribers = d.subscribers || []; renderSubscribers(); })
+  return api('admin-signups-list').then(function (d) { signups = d.signups || []; renderSignups(); })
     .catch(function (e) { if (e.status === 401) { logout(); return; } $('subRows').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
 }
-function renderSubscribers() {
-  if (!subscribers.length) { $('subRows').innerHTML = '<div class="empty">No subscribers yet.</div>'; return; }
-  var sorted = subscribers.slice().sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
-  $('subRows').innerHTML = sorted.map(function (s) {
+function renderSignups() {
+  if (!signups.length) { $('subRows').innerHTML = '<div class="empty">No signups yet.</div>'; return; }
+  var newCount = signups.filter(function (s) { return !s.added; }).length;
+  $('subRows').innerHTML = '<div class="hint" style="margin-bottom:12px">' + signups.length + ' total &middot; ' + newCount + ' not yet added to Substack</div>' + signups.map(function (s) {
     return '<div class="sub-row" data-email="' + esc(s.email) + '">' +
-      '<div class="who"><div class="em">' + esc(s.email) + '</div><div class="sub">' + esc(s.source || 'manual') + ' &middot; ends ' + esc(fmtDate(s.expires)) + (s.note ? ' &middot; ' + esc(s.note) : '') + '</div></div>' +
-      '<div class="badges"><span class="sub-badge ' + esc(s.status) + '">' + esc(s.status) + '</span>' +
-      '<button class="btn small" data-edit-sub="' + esc(s.email) + '" type="button">Edit</button>' +
+      '<div class="who"><div class="em">' + esc(s.email) + '</div><div class="sub">' + esc(fmtWhen(s.at)) + ' &middot; from ' + esc(s.source || 'site') + '</div></div>' +
+      '<div class="badges"><span class="sub-badge ' + (s.added ? 'active' : '') + '">' + (s.added ? 'On Substack' : 'New') + '</span>' +
+      '<button class="btn small" data-toggle-sub="' + esc(s.email) + '" type="button">' + (s.added ? 'Mark as new' : 'Mark as added') + '</button>' +
       '<button class="btn small" data-del-sub="' + esc(s.email) + '" type="button">Remove</button></div></div>';
   }).join('');
 }
-function fillSubForm(s) {
-  $('s-email').value = s ? s.email : ''; $('s-status').value = s ? s.status : 'active';
-  $('s-expires').value = s && s.expires ? s.expires.slice(0, 10) : '';
-  $('s-source').value = s ? (s.source || '') : ''; $('s-note').value = s ? (s.note || '') : '';
-  $('s-notify').checked = !s; // default on only for brand-new adds, not when re-editing someone
+function copyText(text, okMsg) {
+  var done = function () { toast(okMsg, 'ok'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function () { toast('Could not copy.', 'error'); }); }
+  else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); done(); } catch (e) { toast('Could not copy.', 'error'); } t.remove(); }
 }
-function saveSubscriber() {
-  var email = $('s-email').value.trim();
-  if (!email) { toast('An email is required.', 'error'); return; }
-  var payload = {
-    email: email, status: $('s-status').value,
-    expires: $('s-expires').value || null, source: $('s-source').value.trim() || 'manual',
-    note: $('s-note').value.trim(), notify: $('s-notify').checked,
-  };
-  $('s-submit').disabled = true;
-  api('admin-subs-upsert', payload).then(function (r) {
-    toast(r.notifyError ? 'Saved, but the email could not be sent: ' + r.notifyError : 'Subscriber saved.', r.notifyError ? 'error' : 'ok');
-    fillSubForm(null); return loadSubscribers();
-  }).catch(function (e) { if (e.status === 401) { logout(); return; } toast(e.message, 'error'); })
-    .then(function () { $('s-submit').disabled = false; });
+function copyEmails(onlyNew) {
+  var list = signups.filter(function (s) { return !onlyNew || !s.added; }).map(function (s) { return s.email; });
+  if (!list.length) { toast(onlyNew ? 'Nothing new to copy.' : 'No signups yet.', 'error'); return; }
+  copyText(list.join('\n'), 'Copied ' + list.length + (list.length === 1 ? ' email.' : ' emails.'));
 }
-function deleteSubscriber(email) {
+function downloadCsv() {
+  var rows = ['email,signed_up,source,on_substack'].concat(signups.map(function (s) { return [s.email, s.at, s.source || '', s.added ? 'yes' : 'no'].join(','); }));
+  var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' })); a.download = 'signups.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+function toggleSignup(email) {
+  var s = signups.find(function (x) { return x.email === email; }); if (!s) return;
+  api('admin-signups-update', { email: email, added: !s.added }).then(loadSignups)
+    .catch(function (e) { if (e.status === 401) { logout(); return; } toast(e.message, 'error'); });
+}
+function deleteSignup(email) {
   if (!confirm('Remove ' + email + '? This cannot be undone.')) return;
-  api('admin-subs-delete', { email: email }).then(function () { toast('Removed.', 'ok'); return loadSubscribers(); })
+  api('admin-signups-update', { email: email, remove: true }).then(function () { toast('Removed.', 'ok'); return loadSignups(); })
     .catch(function (e) { if (e.status === 401) { logout(); return; } toast(e.message, 'error'); });
 }
 
@@ -458,11 +441,6 @@ function syncKindFields() {
   $('f-episode').disabled = kind === 'episode' && fin;
   $('lblSeason').textContent = kind === 'special' ? 'Sits in season' : 'Season';
   $('lblEpisode').textContent = kind === 'special' ? 'After episode' : 'Episode';
-  var paid = $('f-audience').value === 'paid';
-  $('paywallNote').classList.toggle('hidden', !paid);
-  $('paywallNote').textContent = kind === 'poem'
-    ? 'Visitors who are not subscribed will see only the first stanza of this poem, followed by the subscribe box.'
-    : 'Visitors who are not subscribed will see only the first three paragraphs, followed by the subscribe box.';
 }
 function setThumb(url) {
   var th = $('thumb');
@@ -473,7 +451,7 @@ function setThumb(url) {
 function fillForm(p) {
   $('f-title').value = p.title || ''; $('f-subtitle').value = p.subtitle || '';
   $('f-kind').value = p.kind || 'episode'; $('f-season').value = p.season || ''; $('f-episode').value = p.episode || '';
-  $('f-finale').checked = !!p.finale; $('f-audience').value = p.audience === 'free' ? 'free' : 'paid';
+  $('f-finale').checked = !!p.finale;
   $('f-thread').value = p.thread || '';
   $('f-status').value = p.status === 'draft' ? 'draft' : 'published'; $('f-date').value = p.date || today();
   $('f-cover').value = p.cover || ''; setThumb(p.cover);
@@ -494,7 +472,7 @@ function readForm() {
     title: $('f-title').value.trim(), subtitle: $('f-subtitle').value.trim(), kind: kind,
     season: kind === 'poem' ? null : parseInt($('f-season').value, 10) || 1,
     episode: kind === 'poem' || fin ? null : parseInt($('f-episode').value, 10) || 1, finale: fin,
-    audience: $('f-audience').value, status: $('f-status').value, date: $('f-date').value,
+    status: $('f-status').value, date: $('f-date').value,
     thread: kind === 'episode' ? ($('f-thread').value || null) : null,
     cover: $('f-cover').value.trim(), body: fromEditor(cleanHtml(body)),
   };
@@ -521,7 +499,7 @@ function newPost(kind) {
   var eps = posts.filter(function (p) { return p.kind === 'episode' && !p.finale; });
   var season = eps.reduce(function (m, p) { return Math.max(m, p.season || 1); }, 1);
   var nextEp = eps.filter(function (p) { return p.season === season; }).reduce(function (m, p) { return Math.max(m, p.episode || 0); }, 0) + 1;
-  current = { kind: kind, season: kind === 'poem' ? null : season, episode: kind === 'poem' ? null : nextEp, audience: 'paid', status: 'published', date: today(), title: '', subtitle: '', cover: '', body: '' };
+  current = { kind: kind, season: kind === 'poem' ? null : season, episode: kind === 'poem' ? null : nextEp, status: 'published', date: today(), title: '', subtitle: '', cover: '', body: '' };
   isNew = true; fillForm(current); dirty = false; show('edit'); $('f-title').focus();
 }
 function leaveEdit() {
@@ -621,13 +599,14 @@ $('logout').addEventListener('click', function () { if (!dirty || confirm('You h
 $('search').addEventListener('input', function (e) { query = e.target.value.trim(); renderList(); });
 $('chips').addEventListener('click', function (e) { var b = e.target.closest('[data-filter]'); if (b) { filter = b.dataset.filter; renderList(); } });
 $('rows').addEventListener('click', function (e) { var b = e.target.closest('.row'); if (b) openPost(b.dataset.id); });
-$('navSubs').addEventListener('click', function () { show('subs'); fillSubForm(null); loadSubscribers(); });
+$('navSubs').addEventListener('click', function () { show('subs'); loadSignups(); });
 $('backFromSubs').addEventListener('click', function () { show('list'); });
-$('s-submit').addEventListener('click', saveSubscriber);
+$('copyNew').addEventListener('click', function () { copyEmails(true); });
+$('copyAll').addEventListener('click', function () { copyEmails(false); });
+$('downloadCsv').addEventListener('click', downloadCsv);
 $('subRows').addEventListener('click', function (e) {
-  var del = e.target.closest('[data-del-sub]'); if (del) { deleteSubscriber(del.getAttribute('data-del-sub')); return; }
-  var ed = e.target.closest('[data-edit-sub]');
-  if (ed) { var s = subscribers.find(function (x) { return x.email === ed.getAttribute('data-edit-sub'); }); if (s) { fillSubForm(s); window.scrollTo(0, 0); } }
+  var del = e.target.closest('[data-del-sub]'); if (del) { deleteSignup(del.getAttribute('data-del-sub')); return; }
+  var tg = e.target.closest('[data-toggle-sub]'); if (tg) toggleSignup(tg.getAttribute('data-toggle-sub'));
 });
 Array.prototype.forEach.call(document.querySelectorAll('[data-new]'), function (b) { b.addEventListener('click', function () { newPost(b.dataset.new); }); });
 $('back').addEventListener('click', leaveEdit);
@@ -635,7 +614,7 @@ $('save').addEventListener('click', save);
 $('toolbar').addEventListener('mousedown', function (e) { if (e.target.closest('.tb')) e.preventDefault(); });   // keep the text selection
 $('toolbar').addEventListener('click', function (e) { var b = e.target.closest('.tb'); if (!b || b.disabled) return; if (b.dataset.cmd === 'html') toggleHtml(); else command(b.dataset.cmd); });
 $('f-kind').addEventListener('change', function () { syncKindFields(); if (isNew) $('save').textContent = 'Publish'; setDirty(true); });
-['f-finale', 'f-audience', 'f-thread'].forEach(function (id) { $(id).addEventListener('change', function () { syncKindFields(); setDirty(true); }); });
+['f-finale', 'f-thread'].forEach(function (id) { $(id).addEventListener('change', function () { syncKindFields(); setDirty(true); }); });
 ['f-title', 'f-subtitle', 'f-season', 'f-episode', 'f-date', 'f-status', 'bodyHtml'].forEach(function (id) { $(id).addEventListener('input', function () { setDirty(true); }); });
 $('f-cover').addEventListener('input', function () { setThumb($('f-cover').value.trim()); setDirty(true); });
 $('body').addEventListener('input', function () { setDirty(true); });

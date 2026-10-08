@@ -87,7 +87,7 @@ test('an edited post also keeps working through the GitHub-fallback path (cache 
 test('a brand-new post created through the editor is immediately readable live', async () => {
   const created = {
     title: 'A Fresh One', subtitle: 'Straight from the editor', kind: 'poem',
-    date: '2026-09-30', audience: 'free', body: '<p>Line one of the poem, long enough to pass validation and mean something real here.</p>',
+    date: '2026-09-30', body: '<p>Line one of the poem, long enough to pass validation and mean something real here.</p>',
   };
   const r = await save(authed({ post: created, isNew: true }));
   assert.equal(r.statusCode, 200);

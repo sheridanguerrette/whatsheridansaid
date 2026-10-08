@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { sanitizeBody, textOf, previewBlocks, stripLeadingTitle } = require('./lib/content');
 const RP = require('./lib/render-post');
-const { esc, fmtDate, isPaid, LOCK, tagShort, tagLong, sortKey, url, fixBody, navLink, FOOTER, gate } = RP;
+const { esc, fmtDate, tagShort, tagLong, sortKey, url, fixBody, navLink, FOOTER } = RP;
 
 const ROOT = __dirname;
 const SRC = path.join(ROOT, 'src');
@@ -51,7 +51,7 @@ function card(x, dataSeason, dataEpisode) {
   const img = x.cover ? `<img src="${esc(url(x.cover, ''))}" alt="${esc(x.title)}" loading="lazy" onerror="this.remove()">` : '';
   return `  <a class="card" href="read/${x.slug}.html" data-thread="${esc(x.thread || '')}" data-season="${dataSeason}" data-episode="${dataEpisode}">
     <div class="cover">${img}</div>
-    <div class="tag">${esc(tagShort(x))}${isPaid(x) ? ' ' + LOCK(12) : ''}</div>
+    <div class="tag">${esc(tagShort(x))}</div>
     <h3>${esc(x.title)}</h3>
     <p>${esc(x.subtitle)}</p>
   </a>`;
@@ -67,7 +67,7 @@ function readPage(x) {
 // ---------- homepage: real content, driven by content/homepage.json ----------
 let HOME = {};
 try { HOME = JSON.parse(fs.readFileSync(path.join(ROOT, 'content', 'homepage.json'), 'utf8')); } catch (e) { console.warn('WARNING: content/homepage.json missing or unreadable; using automatic picks.'); }
-const firstFree = (kind, n) => (kind === 'poem' ? [...poems].reverse() : [...episodes].filter((x) => x.kind === 'episode')).filter((x) => !isPaid(x)).slice(0, n).map((x) => x.slug);
+const firstFree = (kind, n) => (kind === 'poem' ? [...poems].reverse() : [...episodes].filter((x) => x.kind === 'episode')).slice(0, n).map((x) => x.slug);
 HOME.pick = HOME.pick || firstFree('episode', 1)[0];
 HOME.featuredEpisodes = HOME.featuredEpisodes || firstFree('episode', 5);
 HOME.featuredPoems = HOME.featuredPoems || firstFree('poem', 3);
@@ -121,12 +121,13 @@ fill('archive.template.html', 'archive.html', {
   '<!--ARCHIVE_CARDS-->': episodes.map((x) => card(x, x.season || 1, x.finale ? 999 : x.episode || 0)).join('\n'),
 });
 
-// poetry: free poems in the slider (newest first), paid poems in the paginated grid
+// poetry: the newest poems in the slider, every older poem in the paginated grid
 const poemsNewest = [...poems].reverse();
+const SLIDER_N = 8;
 const ordinal = new Map(poems.map((x, i) => [x.slug, i + 1])); // page script sorts newest-first by this
 fill('poetry.template.html', 'poetry.html', {
-  '<!--POEMS_FREE-->': poemsNewest.filter((x) => !isPaid(x)).map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
-  '<!--POEMS_PAID-->': poemsNewest.filter(isPaid).map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
+  '<!--POEMS_FREE-->': poemsNewest.slice(0, SLIDER_N).map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
+  '<!--POEMS_PAID-->': poemsNewest.slice(SLIDER_N).map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
 });
 
 fill('index.template.html', 'index.html', {
@@ -137,7 +138,7 @@ fill('index.template.html', 'index.html', {
 });
 
 // sitemap + robots
-const pages = ['', 'archive.html', 'poetry.html', 'about.html'].map((p) => ({ loc: `${SITE_URL}/${p}` }))
+const pages = ['', 'archive.html', 'poetry.html', 'about.html', 'privacy.html'].map((p) => ({ loc: `${SITE_URL}/${p}` }))
   .concat(posts.map((x) => ({ loc: `${SITE_URL}/read/${x.slug}.html`, lastmod: x.date })));
 fs.writeFileSync(path.join(DIST, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map((p) => `  <url><loc>${p.loc}</loc>${p.lastmod ? `<lastmod>${p.lastmod}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nDisallow: /write/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);

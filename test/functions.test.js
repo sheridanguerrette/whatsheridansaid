@@ -16,7 +16,7 @@ let gh;
 const fresh = () => { gh = createFakeGitHub({ repo: 'me/wss', token: 'tok_123', files: { 'content/posts.json': Buffer.from(seed) } }); global.fetch = gh.fetch; };
 const ev = (body, pw = 'correct horse', method = 'POST') => ({ httpMethod: method, headers: pw == null ? {} : { authorization: 'Bearer ' + pw }, body: JSON.stringify(body || {}) });
 const call = async (fn, e) => { const r = await fn(e); return { status: r.statusCode, body: JSON.parse(r.body) }; };
-const base = { title: 'A New Thing', subtitle: 'sub', kind: 'episode', season: 2, episode: 19, audience: 'paid', status: 'published', date: '2026-10-01', cover: '', body: '<p>Hello there.</p>' };
+const base = { title: 'A New Thing', subtitle: 'sub', kind: 'episode', season: 2, episode: 19, status: 'published', date: '2026-10-01', cover: '', body: '<p>Hello there.</p>' };
 
 test('rejects missing / wrong password, wrong method', async () => {
   fresh();
@@ -118,7 +118,7 @@ test('a GitHub outage is reported, not swallowed', async () => {
 
 test('integration: a saved post shows up in the rebuilt site', async () => {
   fresh(); const { execSync } = require('child_process'); const os = require('os');
-  await call(save, ev({ isNew: true, post: { ...base, title: 'Brand New Episode', season: 2, episode: 19, audience: 'free', body: '<p>' + 'word '.repeat(120) + '</p>' } }));
+  await call(save, ev({ isNew: true, post: { ...base, title: 'Brand New Episode', season: 2, episode: 19, body: '<p>' + 'word '.repeat(120) + '</p>' } }));
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wss-')); fs.mkdirSync(path.join(tmp, 'content'));
   for (const f of ['build.js', 'package.json']) fs.copyFileSync(path.join(ROOT, f), path.join(tmp, f));
   fs.cpSync(path.join(ROOT, 'lib'), path.join(tmp, 'lib'), { recursive: true }); fs.cpSync(path.join(ROOT, 'src'), path.join(tmp, 'src'), { recursive: true });

@@ -13,8 +13,7 @@ process.env.ADMIN_PASSWORD = 'open sesame'; process.env.GITHUB_TOKEN = 'tok'; pr
 process.env.SITE_URL = 'https://site.test';
 const fns = {
   'admin-list': require('../netlify/functions/admin-list').handler, 'admin-save': require('../netlify/functions/admin-save').handler, 'admin-upload': require('../netlify/functions/admin-upload').handler,
-  'admin-subs-list': require('../netlify/functions/admin-subs-list').handler, 'admin-subs-upsert': require('../netlify/functions/admin-subs-upsert').handler, 'admin-subs-delete': require('../netlify/functions/admin-subs-delete').handler,
-};
+  'admin-signups-list': require('../netlify/functions/admin-signups-list').handler, 'admin-signups-update': require('../netlify/functions/admin-signups-update').handler, };
 
 const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
 const until = async (fn, ms = 2000) => { const t = Date.now(); while (Date.now() - t < ms) { if (fn()) return true; await tick(10); } return false; };
@@ -52,7 +51,6 @@ test('log in, browse, search and filter all posts', async () => {
   assert.equal(b.visible('listView'), true); assert.equal(b.rows().length, 58);
   b.type('search', 'mr. cigar'); assert.equal(b.rows().length, 1); b.type('search', '');
   b.d.querySelector('[data-filter="poem"]').click(); assert.equal(b.rows().length, 12);
-  b.d.querySelector('[data-filter="free"]').click(); assert.equal(b.rows().length, 12);   // 12 free posts overall
   b.d.querySelector('[data-filter="draft"]').click(); assert.match(b.$('rows').textContent, /Nothing matches/);
   assert.deepEqual(b.errors, []);
 });
@@ -62,7 +60,7 @@ test('click an old post, fix a typo, save: one commit, live URL unchanged', asyn
   b.d.querySelector('.row[data-id="non-perishable-items"]').click();
   assert.equal(b.visible('editView'), true);
   assert.equal(b.$('f-title').value, 'Non-Perishable Items'); assert.equal(b.$('f-season').value, '2'); assert.equal(b.$('f-episode').value, '17');
-  assert.equal(b.$('f-audience').value, 'free'); assert.match(b.$('body').textContent, /I-35/);
+  assert.match(b.$('body').textContent, /I-35/);
   assert.equal(b.$('openPage').href, 'https://site.test/read/non-perishable-items.html');
   const before = b.gh.json('content/posts.json').find((p) => p.slug === 'non-perishable-items');
   b.$('body').innerHTML = b.$('body').innerHTML.replace('countless times', 'countless times, fixed');
@@ -96,14 +94,13 @@ test('pasted text from Word / Google Docs is cleaned', async () => {
 test('new poem: fields adapt, defaults are sensible, it saves', async () => {
   const b = boot(); await b.login('open sesame');
   b.d.querySelector('[data-new="poem"]').click();
-  assert.equal(b.$('wrapSeason').classList.contains('hidden'), true); assert.equal(b.$('f-audience').value, 'paid'); assert.equal(b.$('save').textContent, 'Publish');
-  assert.match(b.$('paywallNote').textContent, /first stanza/);
+  assert.equal(b.$('wrapSeason').classList.contains('hidden'), true); assert.equal(b.$('save').textContent, 'Publish');
   b.$('save').click(); await until(() => /title/i.test(b.$('toast').textContent)); assert.match(b.$('toast').textContent, /add a title/i);   // blocked client-side
   b.type('f-title', 'A Tiny Poem'); b.type('f-subtitle', 'Just a few lines.');
   b.$('body').innerHTML = '<p class="stanza">first line<br>second line</p>'; b.$('body').dispatchEvent(new b.w.Event('input', { bubbles: true }));
   const n = b.gh.commits.length; b.$('save').click(); await until(() => b.gh.commits.length > n);
   const saved = b.gh.json('content/posts.json').find((p) => p.slug === 'a-tiny-poem');
-  assert.equal(saved.kind, 'poem'); assert.equal(saved.season, null); assert.equal(saved.audience, 'paid'); assert.equal(saved.body, '<p class="stanza">first line<br />second line</p>');
+  assert.equal(saved.kind, 'poem'); assert.equal(saved.season, null); assert.equal(saved.body, '<p class="stanza">first line<br />second line</p>');
   assert.equal(b.gh.commits.at(-1).message, 'New post: A Tiny Poem');
 });
 
@@ -169,39 +166,27 @@ test('opening and saving ANY old post without editing it changes nothing you can
   assert.equal(b.gh.json('content/posts.json').length, 58);
 });
 
-test('subscribers tab: adding a subscriber (e.g. a transferred one) shows up in the list', async () => {
+test('signups tab: shows emails, marks them added, copies new ones, removes them', async () => {
   const b = boot(); await b.login('open sesame');
+  const { addSignup } = require('../lib/signups');
+  await addSignup('First@Example.com', 'home'); await addSignup('second@example.com', 'poetry'); await addSignup('first@example.com', 'home');
   b.$('navSubs').click();
   assert.equal(b.visible('subsView'), true);
-  await until(() => !/Loading/.test(b.$('subRows').textContent));
-  assert.match(b.$('subRows').textContent, /No subscribers yet/);
+  await until(() => /first@example\.com/.test(b.$('subRows').textContent));
+  assert.match(b.$('subRows').textContent, /second@example\.com/);
+  assert.match(b.$('subRows').textContent, /2 total/);   // duplicate was ignored
 
-  b.type('s-email', 'andymims74@gmail.com');
-  b.$('s-status').value = 'active';
-  b.type('s-expires', '2027-07-21');
-  b.type('s-source', 'wix-transfer');
-  b.type('s-note', 'Transferred yearly member from Wix, renews 7/21.');
-  b.$('s-notify').checked = false; // no RESEND_API_KEY configured in this test
-  b.$('s-submit').click();
-  await until(() => /saved/i.test(b.$('toast').textContent));
-  await until(() => /andymims74/.test(b.$('subRows').textContent));
+  b.d.querySelector('[data-toggle-sub="first@example.com"]').click();
+  await until(() => /1 not yet added/.test(b.$('subRows').textContent));
+  assert.match(b.d.querySelector('[data-email="first@example.com"]').textContent, /On Substack/);
 
-  assert.match(b.$('subRows').textContent, /wix-transfer/);
-  assert.match(b.$('subRows').textContent, /active/);
+  b.d.querySelector('[data-del-sub="second@example.com"]').click();
+  await until(() => !/second@example\.com/.test(b.$('subRows').textContent));
 });
 
-test('subscribers tab: editing loads the row back into the form, and removing takes it out of the list', async () => {
+test('signups tab: empty state', async () => {
+  blobs.reset();
   const b = boot(); await b.login('open sesame');
   b.$('navSubs').click(); await until(() => !/Loading/.test(b.$('subRows').textContent));
-
-  b.type('s-email', 'reader@example.com'); b.$('s-status').value = 'free'; b.$('s-submit').click();
-  await until(() => /reader@example\.com/.test(b.$('subRows').textContent));
-
-  b.d.querySelector('[data-edit-sub="reader@example.com"]').click();
-  assert.equal(b.$('s-email').value, 'reader@example.com');
-  assert.equal(b.$('s-status').value, 'free');
-
-  b.d.querySelector('[data-del-sub="reader@example.com"]').click();
-  await until(() => /No subscribers yet/.test(b.$('subRows').textContent));
-  assert.doesNotMatch(b.$('subRows').textContent, /reader@example\.com/);
+  assert.match(b.$('subRows').textContent, /No signups yet/);
 });

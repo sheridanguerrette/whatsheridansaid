@@ -4,7 +4,7 @@ The site is generated from one file, `content/posts.json`. The editor at `yoursi
 
 ## One-time setup (about 20 minutes)
 
-**1. GitHub (where the files live).** Make a free account, then create a new repository called `wss-site`. Choose **Private**. This matters, because the file holds the full text of your subscribers-only posts. Unzip this project, open the repository page, choose "uploading an existing file", and drag in everything from inside the unzipped folder.
+**1. GitHub (where the files live).** Make a free account, then create a new repository called `wss-site`. Choose **Private**. Unzip this project, open the repository page, choose "uploading an existing file", and drag in everything from inside the unzipped folder.
 
 **2. Netlify (what publishes it).** Sign up with your GitHub login, choose "Add new site", then "Import an existing project", and pick `wss-site`. Every build setting is already in `netlify.toml`, so just deploy.
 
