@@ -88,15 +88,15 @@ function spotlightImage(x) {
 }
 const recent = [...episodes].filter((x) => x.kind === 'episode' && !x.finale).reverse().slice(0, 8);
 const pick = pickPosts([HOME.pick], 'pick')[0] || recent[0];
-const pickImg = spotlightImage(pick);
+const SUBSTACK_PAID = 'https://whatsheridansaid.substack.com/subscribe';
 const pickHtml = `<section class="spotlight">
   <div class="spotlight-inner">
-    <div class="spotlight-cover">${pickImg ? `<img src="${esc(url(pickImg, ''))}" alt="${esc(pick.title)}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.remove()">` : ''}</div>
+    <div class="spotlight-cover letter-card"><div class="lc-inner"><span class="lc-heart">&#9825;</span><span class="lc-line">Postmarked the last day of every month</span></div></div>
     <div class="spotlight-text">
-      <div class="eyebrow">Production's Pick</div>
-      <h2>${esc(pick.title)}</h2>
-      <p>${esc(tagLong(pick))} &mdash; ${esc(pick.subtitle || '')}</p>
-      <a href="read/${pick.slug}.html" class="cta">Read the Episode</a>
+      <div class="eyebrow">For Paid Members</div>
+      <h2>A Handwritten Poem and Letter, in Your Mailbox</h2>
+      <p>On the last day of every month, I mail paid members a poem and a letter in my own handwriting. Anywhere in the world. $8 a month or $80 a year.</p>
+      <a href="${SUBSTACK_PAID}" class="cta" target="_blank" rel="noopener">Become a Paid Member</a>
     </div>
   </div>
 </section>`;

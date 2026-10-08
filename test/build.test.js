@@ -42,7 +42,8 @@ if (!/nav-tag">Season 2 \u00b7 Episode 16</.test(nav) || !/nav-tag">Season 2 \u0
 const a = fs.readFileSync(dist('archive.html'), 'utf8'); const po = fs.readFileSync(dist('poetry.html'), 'utf8');
 const eps = posts.filter((p) => p.kind !== 'poem').length; const poems = posts.filter((p) => p.kind === 'poem').length;
 if ((a.match(/<a class="card"/g) || []).length !== eps) fail('archive card count');
-if ((po.match(/<a class="card"/g) || []).length !== poems) fail('poetry card count');
+const picks = (JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'content', 'homepage.json'), 'utf8')).poetryPicks || []).length;
+if ((po.match(/<a class="card"/g) || []).length !== poems + picks) fail('poetry card count');
 if (/<!--[A-Z_]+-->/.test(a + po)) fail('unfilled template marker');
 if (!fs.existsSync(dist('sitemap.xml')) || !fs.existsSync(dist('robots.txt'))) fail('sitemap/robots missing');
 if (fs.existsSync(dist('content')) || fs.existsSync(dist('posts.json'))) fail('content leaked into dist');
