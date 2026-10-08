@@ -317,7 +317,7 @@ function login(pw) {
 }
 
 /* ---------- list ---------- */
-var FILTERS = [['all', 'All'], ['episode', 'Episodes'], ['poem', 'Poems'], ['needs', 'Needs photo'], ['draft', 'Drafts']];
+var FILTERS = [['all', 'All'], ['episode', 'Episodes'], ['poem', 'Poems'], ['draft', 'Drafts']];
 function coverState(p) { return !p.cover ? 'none' : /^https?:/i.test(p.cover) ? 'imported' : 'ok'; }
 function thumbHtml(p) {
   var st = coverState(p);
@@ -328,7 +328,6 @@ function thumbHtml(p) {
 function matches(p) {
   if (filter === 'episode' && p.kind === 'poem') return false;
   if (filter === 'poem' && p.kind !== 'poem') return false;
-  if (filter === 'needs' && coverState(p) === 'ok') return false;
   if (filter === 'draft' && p.status !== 'draft') return false;
   if (query) { var q = query.toLowerCase(); if ((p.title + ' ' + (p.subtitle || '')).toLowerCase().indexOf(q) < 0) return false; }
   return true;
