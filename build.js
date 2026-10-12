@@ -137,7 +137,7 @@ fill('index.template.html', 'index.html', {
 });
 
 // sitemap + robots
-const pages = ['', 'archive.html', 'poetry.html', 'about.html', 'privacy.html'].map((p) => ({ loc: `${SITE_URL}/${p}` }))
+const pages = ['', 'archive.html', 'poetry.html', 'about.html', 'privacy.html', 'accessibility.html'].map((p) => ({ loc: `${SITE_URL}/${p}` }))
   .concat(posts.map((x) => ({ loc: `${SITE_URL}/read/${x.slug}.html`, lastmod: x.date })));
 fs.writeFileSync(path.join(DIST, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map((p) => `  <url><loc>${p.loc}</loc>${p.lastmod ? `<lastmod>${p.lastmod}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nDisallow: /write/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);

@@ -1243,3 +1243,12 @@ footer .fine-print .copyright{
   .member-banner .mb-shade{ background:linear-gradient(0deg, rgba(10,10,10,0.96) 0%, rgba(10,10,10,0.88) 45%, rgba(10,10,10,0.1) 80%); }
   .member-banner .mb-copy{ padding:40px 6vw 50px; }
 }
+
+/* ---------- keyboard focus: always visible ---------- */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+  outline:2px solid #f5f5f2; outline-offset:3px;
+}
+.on-light a:focus-visible, .on-light button:focus-visible, .on-light input:focus-visible,
+.spotlight a:focus-visible, .draw-in a:focus-visible, .draw-in button:focus-visible, .draw-in input:focus-visible{
+  outline-color:#0a0a0a;
+}
