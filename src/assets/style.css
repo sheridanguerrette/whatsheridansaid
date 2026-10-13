@@ -614,6 +614,8 @@ nav a.current::after{ display:none; }
   gap:22px;
   overflow-x:auto;
   scroll-snap-type:x proximity;
+  scroll-padding-left:6vw;
+  scroll-padding-right:6vw;
   overscroll-behavior-x:contain;
   scrollbar-width:none;
 }
@@ -629,6 +631,8 @@ nav a.current::after{ display:none; }
   gap:14px;
 }
 .slider-wrap .row{
+  scroll-padding-left:0;
+  scroll-padding-right:0;
   padding:22px 0;
   margin:-22px 0;
   flex:1;
