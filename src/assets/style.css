@@ -1242,8 +1242,8 @@ footer .fine-print .copyright{
 .member-banner .cta{ display:inline-block; background:#f5f5f2; color:#0a0a0a; padding:15px 28px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; text-decoration:none; }
 .member-banner .cta:hover{ opacity:0.82; }
 @media (max-width:760px){
-  .member-banner{ min-height:560px; align-items:flex-end; }
-  .member-banner .mb-photo{ left:0; width:100%; object-position:50% 22%; -webkit-mask-image:none; mask-image:none; }
+  .member-banner{ min-height:660px; align-items:flex-end; }
+  .member-banner .mb-photo{ left:0; width:100%; object-position:50% 12%; -webkit-mask-image:none; mask-image:none; }
   .member-banner .mb-shade{ background:linear-gradient(0deg, rgba(10,10,10,0.96) 0%, rgba(10,10,10,0.88) 45%, rgba(10,10,10,0.1) 80%); }
   .member-banner .mb-copy{ padding:40px 6vw 50px; }
 }
