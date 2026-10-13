@@ -86,7 +86,7 @@ function spotlightImage(x) {
   const imgs = [...(x.body || '').matchAll(/<img[^>]+src="([^"]+)"/g)].map((m) => m[1]).filter((u) => { const e = dims(u); return e && e[0] / e[1] < 1.6; });
   return imgs[0] || x.cover || '';
 }
-const recent = [...episodes].filter((x) => x.kind === 'episode' && !x.finale).reverse().slice(0, 4);
+const recent = [...episodes].filter((x) => x.kind === 'episode' && !x.finale).reverse().slice(0, 8);
 const pick = pickPosts([HOME.pick], 'pick')[0] || recent[0];
 const SUBSTACK_PAID = 'https://whatsheridansaid.substack.com/subscribe';
 const pickHtml = `<section class="member-banner">

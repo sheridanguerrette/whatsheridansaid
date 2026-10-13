@@ -137,16 +137,37 @@
     var leftBtn = wrap.querySelector('.slider-arrow.left');
     var rightBtn = wrap.querySelector('.slider-arrow.right');
     if(!row) return;
-    if(leftBtn){
-      leftBtn.addEventListener('click', function(){
-        row.scrollBy({ left: -row.clientWidth, behavior: 'smooth' });
-      });
+
+    function maxScroll(){ return Math.max(0, row.scrollWidth - row.clientWidth); }
+
+    // how far one "page" is: as many whole cards as fit in view (at least one)
+    function pageStep(){
+      var cards = row.children;
+      if(cards.length < 2) return row.clientWidth;
+      var step = cards[1].offsetLeft - cards[0].offsetLeft;
+      if(step <= 0) return row.clientWidth;
+      var gap = step - cards[0].offsetWidth;
+      var count = Math.max(1, Math.floor((row.clientWidth + gap + 2) / step));
+      return step * count;
     }
-    if(rightBtn){
-      rightBtn.addEventListener('click', function(){
-        row.scrollBy({ left: row.clientWidth, behavior: 'smooth' });
-      });
+
+    function go(dir){
+      var target = row.scrollLeft + dir * pageStep();
+      target = Math.min(maxScroll(), Math.max(0, target));
+      row.scrollTo({ left: target, behavior: 'smooth' });
     }
+
+    function sync(){
+      var x = row.scrollLeft, m = maxScroll();
+      if(leftBtn){ leftBtn.disabled = x <= 8; leftBtn.classList.toggle('is-off', x <= 8); }
+      if(rightBtn){ rightBtn.disabled = x >= m - 8; rightBtn.classList.toggle('is-off', x >= m - 8); }
+    }
+
+    if(leftBtn) leftBtn.addEventListener('click', function(){ go(-1); });
+    if(rightBtn) rightBtn.addEventListener('click', function(){ go(1); });
+    row.addEventListener('scroll', sync, { passive:true });
+    window.addEventListener('resize', sync);
+    sync();
   });
 
   // ---------- archive: thread filter, season filter, sort, and pagination ----------
