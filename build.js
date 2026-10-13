@@ -95,7 +95,7 @@ const pickHtml = `<section class="member-banner">
   <div class="mb-copy">
     <div class="eyebrow">For Paid Members</div>
     <h2>A Handwritten Poem and Letter, Written Just for You</h2>
-    <p>On the last day of every month, I write each paid member their own poem and letter by hand and mail it to their door, anywhere in the world. No two are ever the same. $8 a month or $80 a year.</p>
+    <p>On the last day of every month I sit down and write each paid member their own poem and letter by hand, a different one for every person, and slip it in the mail to their door anywhere in the world for $8 a month or $80 a year.</p>
     <a href="${SUBSTACK_PAID}" class="cta" target="_blank" rel="noopener">Become a Paid Member</a>
   </div>
 </section>`;
