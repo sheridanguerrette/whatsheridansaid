@@ -90,7 +90,7 @@ const recent = [...episodes].filter((x) => x.kind === 'episode' && !x.finale).re
 const pick = pickPosts([HOME.pick], 'pick')[0] || recent[0];
 const SUBSTACK_PAID = 'https://whatsheridansaid.substack.com/subscribe';
 const pickHtml = `<section class="member-banner">
-  <img class="mb-photo" src="assets/member-banner.jpg" alt="Close-up black and white photo of Sheridan Guerrette smiling softly, wearing a thin scarf at her neck" width="1350" height="1800" loading="lazy">
+  <img class="mb-photo" src="assets/member-banner.jpg" alt="Black and white profile photo of Sheridan Guerrette in a ruffled white blouse, looking off to the side on a city street" width="1350" height="2025" loading="lazy">
   <div class="mb-shade"></div>
   <div class="mb-copy">
     <div class="eyebrow">For Paid Members</div>

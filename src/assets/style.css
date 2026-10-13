@@ -1233,7 +1233,7 @@ footer .fine-print .copyright{
 
 /* ---------- paid-membership banner: full-bleed photo with the pitch over it ---------- */
 .member-banner{ position:relative; overflow:hidden; background:#0a0a0a; min-height:clamp(520px,52vw,700px); display:flex; align-items:center; }
-.member-banner .mb-photo{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 25%; filter:grayscale(1); }
+.member-banner .mb-photo{ position:absolute; top:0; bottom:0; right:0; left:auto; width:62%; height:100%; object-fit:cover; object-position:50% 18%; filter:grayscale(1); -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28%); mask-image:linear-gradient(90deg,transparent 0,#000 28%); }
 .member-banner .mb-shade{ position:absolute; inset:0; background:linear-gradient(90deg, rgba(10,10,10,0.94) 0%, rgba(10,10,10,0.86) 28%, rgba(10,10,10,0.55) 46%, rgba(10,10,10,0.1) 66%, rgba(10,10,10,0) 80%); }
 .member-banner .mb-copy{ position:relative; z-index:2; max-width:520px; padding:70px 6vw; margin-left:max(0px,calc((100vw - 1200px)/2)); color:#f5f5f2; }
 .member-banner .eyebrow{ font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:#b9b9b3; margin-bottom:16px; }
@@ -1243,7 +1243,7 @@ footer .fine-print .copyright{
 .member-banner .cta:hover{ opacity:0.82; }
 @media (max-width:760px){
   .member-banner{ min-height:560px; align-items:flex-end; }
-  .member-banner .mb-photo{ object-position:50% 20%; }
+  .member-banner .mb-photo{ left:0; width:100%; object-position:50% 22%; -webkit-mask-image:none; mask-image:none; }
   .member-banner .mb-shade{ background:linear-gradient(0deg, rgba(10,10,10,0.96) 0%, rgba(10,10,10,0.88) 45%, rgba(10,10,10,0.1) 80%); }
   .member-banner .mb-copy{ padding:40px 6vw 50px; }
 }
