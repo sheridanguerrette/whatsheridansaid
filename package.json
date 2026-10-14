@@ -5,7 +5,7 @@
   "description": "What Sheridan Said - static site + private editor",
   "scripts": {
     "build": "node build.js",
-    "test": "node test/build.test.js && node --test test/functions.test.js test/editor.test.js test/read-live.test.js test/signup.test.js"
+    "test": "node test/build.test.js && node --test test/functions.test.js test/editor.test.js test/read-live.test.js test/signup.test.js test/address.test.js"
   },
   "engines": {
     "node": ">=18"

@@ -148,6 +148,7 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
     <div class="brand">WHAT SHERIDAN SAID<span>Editor</span></div>
     <div class="bar-actions">
       <button class="btn small" id="navSubs" type="button">Signups</button>
+      <button class="btn small" id="navAddr" type="button">Addresses</button>
       <a class="btn small" href="/" id="viewSite" target="_blank" rel="noopener">View site</a>
       <button class="btn small" id="logout" type="button">Log out</button>
     </div>
@@ -183,6 +184,20 @@ label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase
       <button class="btn small" id="downloadCsv" type="button">Download CSV</button>
     </div>
     <div class="rows" id="subRows"></div>
+  </main>
+
+  <!-- addresses -->
+  <main id="addrView" class="wrap hidden">
+    <div class="list-head">
+      <h2>Addresses</h2>
+      <button class="btn small" id="backFromAddr" type="button">&larr; All posts</button>
+    </div>
+    <div class="hint" style="margin-bottom:18px">Mailing addresses paid members typed into the form at whatsheridansaid.com/mail. Only you can see this page. If someone submits again, their newest address replaces the old one.</div>
+    <div class="new-btns" style="margin-bottom:18px">
+      <button class="btn small" id="copyAddrs" type="button">Copy all addresses</button>
+      <button class="btn small" id="downloadAddrCsv" type="button">Download CSV</button>
+    </div>
+    <div class="rows" id="addrRows"></div>
   </main>
 
   <!-- edit -->
@@ -290,6 +305,8 @@ function demoApi(name, payload) {
     if (name === 'admin-upload') return resolve({ ok: true, url: 'assets/uploads/demo-' + Date.now() + '.jpg' });
     if (name === 'admin-signups-list') return resolve({ signups: window.__DEMO_SUBS__ || [] });
     if (name === 'admin-signups-update') return resolve({ ok: true });
+    if (name === 'admin-addresses-list') return resolve({ addresses: window.__DEMO_ADDRS__ || [] });
+    if (name === 'admin-addresses-update') return resolve({ ok: true });
     resolve({});
   }, 450); });
 }
@@ -301,6 +318,7 @@ function show(which) {
   $('listView').classList.toggle('hidden', which !== 'list');
   $('editView').classList.toggle('hidden', which !== 'edit');
   $('subsView').classList.toggle('hidden', which !== 'subs');
+  $('addrView').classList.toggle('hidden', which !== 'addr');
   window.scrollTo(0, 0);
 }
 function logout() { PW = ''; try { sessionStorage.removeItem('wss-pw'); } catch (e) {} posts = []; show('login'); $('pw').value = ''; }
@@ -386,6 +404,41 @@ function toggleSignup(email) {
 function deleteSignup(email) {
   if (!confirm('Remove ' + email + '? This cannot be undone.')) return;
   api('admin-signups-update', { email: email, remove: true }).then(function () { toast('Removed.', 'ok'); return loadSignups(); })
+    .catch(function (e) { if (e.status === 401) { logout(); return; } toast(e.message, 'error'); });
+}
+
+/* ---------- mailing addresses ---------- */
+var addrs = [];
+function addrLines(a) {
+  return [a.name, a.line1, a.line2, [a.city, a.region, a.postal].filter(Boolean).join(a.region ? ', ' : ' '), a.country].filter(Boolean);
+}
+function loadAddrs() {
+  $('addrRows').innerHTML = '<div class="empty">Loading&hellip;</div>';
+  return api('admin-addresses-list').then(function (d) { addrs = d.addresses || []; renderAddrs(); })
+    .catch(function (e) { if (e.status === 401) { logout(); return; } $('addrRows').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+}
+function renderAddrs() {
+  if (!addrs.length) { $('addrRows').innerHTML = '<div class="empty">No addresses yet.</div>'; return; }
+  $('addrRows').innerHTML = '<div class="hint" style="margin-bottom:12px">' + addrs.length + ' total</div>' + addrs.map(function (a) {
+    return '<div class="sub-row" data-addr="' + esc(a.email) + '">' +
+      '<div class="who"><div class="em">' + esc(a.name) + '</div><div class="sub">' + addrLines(a).slice(1).map(esc).join('<br>') + '</div><div class="sub">' + esc(a.email) + ' &middot; ' + esc(fmtWhen(a.updated || a.at)) + '</div></div>' +
+      '<div class="badges"><button class="btn small" data-copy-addr="' + esc(a.email) + '" type="button">Copy</button>' +
+      '<button class="btn small" data-del-addr="' + esc(a.email) + '" type="button">Remove</button></div></div>';
+  }).join('');
+}
+function copyAddrs() {
+  if (!addrs.length) { toast('No addresses yet.', 'error'); return; }
+  copyText(addrs.map(function (a) { return addrLines(a).join('\n'); }).join('\n\n'), 'Copied ' + addrs.length + (addrs.length === 1 ? ' address.' : ' addresses.'));
+}
+function csvCell(v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+function downloadAddrCsv() {
+  var head = ['name', 'email', 'street', 'unit', 'city', 'region', 'postal_code', 'country', 'updated'];
+  var rows = [head.join(',')].concat(addrs.map(function (a) { return [a.name, a.email, a.line1, a.line2, a.city, a.region, a.postal, a.country, a.updated || a.at].map(csvCell).join(','); }));
+  var el = document.createElement('a'); el.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' })); el.download = 'addresses.csv'; document.body.appendChild(el); el.click(); el.remove();
+}
+function deleteAddr(email) {
+  if (!confirm('Remove this address (' + email + ')? This cannot be undone.')) return;
+  api('admin-addresses-update', { email: email, remove: true }).then(function () { toast('Removed.', 'ok'); return loadAddrs(); })
     .catch(function (e) { if (e.status === 401) { logout(); return; } toast(e.message, 'error'); });
 }
 
@@ -612,6 +665,15 @@ $('chips').addEventListener('click', function (e) { var b = e.target.closest('[d
 $('rows').addEventListener('click', function (e) { var b = e.target.closest('.row'); if (b) openPost(b.dataset.id); });
 $('navSubs').addEventListener('click', function () { show('subs'); loadSignups(); });
 $('backFromSubs').addEventListener('click', function () { show('list'); });
+$('navAddr').addEventListener('click', function () { show('addr'); loadAddrs(); });
+$('backFromAddr').addEventListener('click', function () { show('list'); });
+$('copyAddrs').addEventListener('click', copyAddrs);
+$('downloadAddrCsv').addEventListener('click', downloadAddrCsv);
+$('addrRows').addEventListener('click', function (e) {
+  var del = e.target.closest('[data-del-addr]'); if (del) { deleteAddr(del.getAttribute('data-del-addr')); return; }
+  var cp = e.target.closest('[data-copy-addr]');
+  if (cp) { var a = addrs.find(function (x) { return x.email === cp.getAttribute('data-copy-addr'); }); if (a) copyText(addrLines(a).join('\n'), 'Copied.'); }
+});
 $('copyNew').addEventListener('click', function () { copyEmails(true); });
 $('copyAll').addEventListener('click', function () { copyEmails(false); });
 $('downloadCsv').addEventListener('click', downloadCsv);

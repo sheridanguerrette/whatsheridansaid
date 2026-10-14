@@ -31,3 +31,9 @@
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Short link for the paid-member mailing address page
+[[redirects]]
+  from = "/mail"
+  to = "/mail.html"
+  status = 200

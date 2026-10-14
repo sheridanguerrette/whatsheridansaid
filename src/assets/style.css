@@ -1313,3 +1313,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .read-header .read-sub-form button::after{ content:" \2192"; }
 .read-header .read-sub-form.submitted{ border-bottom-color:transparent; }
 .read-header .read-sub-form .form-note{ margin:0; padding:10px 0; }
+
+/* ---------- mailing address form (/mail) ---------- */
+.address-wrap{ max-width:560px; margin:0 auto; padding:10px 6vw 110px; }
+.address-form label{ display:block; margin-bottom:20px; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+.address-form label .opt{ text-transform:none; letter-spacing:0.02em; }
+.address-form input{ display:block; width:100%; margin-top:8px; background:transparent; border:1px solid var(--hairline); color:var(--ink); padding:14px 16px; font-family:'Questrial',sans-serif; font-size:15px; letter-spacing:0; text-transform:none; outline:none; border-radius:0; }
+.address-form input:focus{ border-color:var(--ink); }
+.address-form .two{ display:grid; grid-template-columns:1fr 1fr; gap:0 16px; align-items:end; }
+.address-form .hp{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+.address-form .cta-solid{ margin-top:10px; background:var(--ink); color:var(--paper); border:0; padding:16px 30px; font-family:'Questrial',sans-serif; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; cursor:pointer; transition:opacity 0.2s ease; }
+.address-form .cta-solid:hover{ opacity:0.82; }
+.address-form .cta-solid:disabled{ opacity:0.5; cursor:default; }
+.address-error{ margin-top:14px; font-size:14px; color:#e8a7a0; min-height:1em; }
+.address-privacy{ margin-top:22px; font-size:13px; line-height:1.7; color:var(--muted); }
+.address-done{ text-align:center; padding:30px 0 20px; }
+.address-done h2{ font-size:clamp(1.6rem,4vw,2.2rem); line-height:1.15; margin-bottom:14px; }
+.address-done p{ color:var(--muted); font-size:15px; line-height:1.7; }
+.address-done[hidden], .address-form[hidden]{ display:none; }
+@media (max-width:520px){ .address-form .two{ grid-template-columns:1fr; } }
