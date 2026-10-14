@@ -1298,3 +1298,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .read-header .read-sub-form input[type="email"]{ flex:1 1 auto; min-width:0; padding:12px 14px; }
 .read-header .read-sub-form button{ padding:12px 20px; }
 .read-header .read-sub-form .form-note{ flex:1 0 100%; }
+
+/* signup sits between the tag and the title */
+.read-header .read-sub-line{ margin-top:16px; }
+.read-header .read-sub-form{ margin-bottom:34px; }
