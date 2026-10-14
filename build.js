@@ -136,6 +136,8 @@ fill('index.template.html', 'index.html', {
   '<!--HOME_FEATURED_POEMS-->': pickPosts(HOME.featuredPoems, 'featuredPoems').map(cardOf).join('\n'),
 });
 
+fill('about.template.html', 'about.html', { '<!--MEMBER_BANNER-->': pickHtml });
+
 // sitemap + robots
 const pages = ['', 'archive.html', 'poetry.html', 'about.html', 'privacy.html', 'accessibility.html'].map((p) => ({ loc: `${SITE_URL}/${p}` }))
   .concat(posts.map((x) => ({ loc: `${SITE_URL}/read/${x.slug}.html`, lastmod: x.date })));

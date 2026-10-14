@@ -17,7 +17,8 @@ for (const p of posts) {
   if (!fs.existsSync(f)) { fail('missing page ' + p.slug); continue; }
   const html = fs.readFileSync(f, 'utf8');
   count++;
-  const m = html.match(/<div class="read-body">([\s\S]*?)<\/div>\s*\n<div class="read-nav">/);
+  const m = html.match(/<div class="read-body">([\s\S]*?)<\/div>\s*\n(?:<aside class="letter-card"[\s\S]*?<\/aside>\s*\n)?<div class="read-nav">/);
+  if (!html.includes('class="letter-card"') || !html.includes('substack.com/subscribe')) fail('missing paid-member letter card: ' + p.slug);
   const shown = m ? strip(m[1]) : ''; const full = textOf(p.body);
   if (shown.length < full.length * 0.97) fail(`page truncated: ${p.title} (${shown.length}/${full.length})`);
   for (const bad of ['read-gate', 'class="lock', 'for subscribers', 'Subscribers only', 'No Subscription Needed', 'Free to Read', 'Paid Members Only']) {

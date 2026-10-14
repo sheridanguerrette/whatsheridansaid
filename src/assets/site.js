@@ -62,6 +62,22 @@
   }
   document.querySelectorAll('.subscribe-form').forEach(wireSubscribeForm);
 
+  // ---------- letter card eases in as the reader reaches the end of a post ----------
+  (function(){
+    var cards = document.querySelectorAll('.letter-card');
+    if(!cards.length || !('IntersectionObserver' in window)) return;
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.remove('lc-pending'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.2 });
+    cards.forEach(function(c){
+      var r = c.getBoundingClientRect();
+      if(r.top > window.innerHeight){ c.classList.add('lc-pending'); io.observe(c); }
+    });
+  })();
+
   // ---------- nav solidifies on scroll ----------
   var headerEl = document.querySelector('header');
   if(headerEl){
