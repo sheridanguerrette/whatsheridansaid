@@ -12,6 +12,7 @@ function notFound() {
 }
 
 exports.handler = async (event) => {
+  require('../../lib/blobs-connect').connect(event);
   const slug = (event.queryStringParameters && event.queryStringParameters.slug || '').replace(/\.html$/, '');
   if (!slug) return notFound();
 

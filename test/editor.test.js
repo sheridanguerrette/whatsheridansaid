@@ -7,6 +7,8 @@ const { createFakeGitHub } = require('./fake-github');
 const fakeBlobs = require('./fake-blobs'); const blobs = fakeBlobs.install();
 
 const ROOT = path.join(__dirname, '..');
+const SEED = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/posts.json'), 'utf8'));
+const N = SEED.length; const NEXT_EP = String(Math.max(...SEED.filter((x) => x.season === 2).map((x) => x.episode || 0)) + 1);
 const HTML = fs.readFileSync(path.join(ROOT, 'src/write/index.html'), 'utf8');
 const seed = fs.readFileSync(path.join(ROOT, 'content/posts.json'));
 process.env.ADMIN_PASSWORD = 'open sesame'; process.env.GITHUB_TOKEN = 'tok'; process.env.GITHUB_REPO = 'me/wss'; process.env.AUTH_FAIL_DELAY_MS = '0';
@@ -49,7 +51,7 @@ test('wrong password stays on the login screen with a clear message', async () =
 
 test('log in, browse, search and filter all posts', async () => {
   const b = boot(); await b.login('open sesame');
-  assert.equal(b.visible('listView'), true); assert.equal(b.rows().length, 58);
+  assert.equal(b.visible('listView'), true); assert.equal(b.rows().length, N);
   b.type('search', 'mr. cigar'); assert.equal(b.rows().length, 1); b.type('search', '');
   b.d.querySelector('[data-filter="poem"]').click(); assert.equal(b.rows().length, 12);
   assert.ok(b.d.querySelector('.row .rthumb img'));
@@ -108,7 +110,7 @@ test('new poem: fields adapt, defaults are sensible, it saves', async () => {
 
 test('new episode suggests the next episode number', async () => {
   const b = boot(); await b.login('open sesame'); b.d.querySelector('[data-new="episode"]').click();
-  assert.equal(b.$('f-season').value, '2'); assert.equal(b.$('f-episode').value, '19');   // S2 E18 is the latest
+  assert.equal(b.$('f-season').value, '2'); assert.equal(b.$('f-episode').value, NEXT_EP);
   assert.equal(b.$('f-date').value.length, 10);
 });
 
@@ -165,7 +167,7 @@ test('opening and saving ANY old post without editing it changes nothing you can
     b.$('back').click();
   }
   assert.deepEqual(damaged, [], 'round-trip changed these posts:\n' + damaged.join('\n'));
-  assert.equal(b.gh.json('content/posts.json').length, 58);
+  assert.equal(b.gh.json('content/posts.json').length, N);
 });
 
 test('signups tab: shows emails, marks them added, copies new ones, removes them', async () => {

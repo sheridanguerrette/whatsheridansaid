@@ -7,6 +7,7 @@ const { setCachedPosts } = require('../../lib/content-cache');
 // permanent record) and refreshes the fast read cache the live read/:slug pages
 // use, so the edit shows up immediately -- no site rebuild, no deploy, no cost.
 exports.handler = async (event) => {
+  require('../../lib/blobs-connect').connect(event);
   const denied = await authorize(event); if (denied) return denied;
   let payload; try { payload = JSON.parse(event.body || '{}'); } catch (e) { return json(400, { error: 'Bad request.' }); }
   const incoming = payload.post; const isNew = !!payload.isNew;

@@ -5,6 +5,7 @@ const { updateSignup, deleteSignup } = require('../../lib/signups');
 // POST { email, added: true|false }  marks a signup as added to Substack
 // POST { email, remove: true }       deletes it
 exports.handler = async (event) => {
+  require('../../lib/blobs-connect').connect(event);
   const denied = await authorize(event); if (denied) return denied;
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
   let body; try { body = JSON.parse(event.body || '{}'); } catch { return json(400, { error: 'Bad request' }); }
