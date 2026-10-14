@@ -12,6 +12,7 @@ function sniff(b) {   // trust the file's bytes, not the name the browser sent
 }
 
 exports.handler = async (event) => {
+  require('../../lib/blobs-connect').connect(event);
   const denied = await authorize(event); if (denied) return denied;
   let payload; try { payload = JSON.parse(event.body || '{}'); } catch (e) { return json(400, { error: 'Bad request.' }); }
   const buf = Buffer.from(String(payload.data || ''), 'base64');

@@ -5,6 +5,7 @@ const { createFakeGitHub } = require('./fake-github');
 
 const ROOT = path.join(__dirname, '..');
 const seed = fs.readFileSync(path.join(ROOT, 'content/posts.json'));
+const N = JSON.parse(seed).length;
 process.env.ADMIN_PASSWORD = 'correct horse'; process.env.GITHUB_TOKEN = 'tok_123';
 process.env.GITHUB_REPO = 'me/wss'; process.env.GITHUB_BRANCH = 'main'; process.env.AUTH_FAIL_DELAY_MS = '0';
 
@@ -16,7 +17,7 @@ let gh;
 const fresh = () => { gh = createFakeGitHub({ repo: 'me/wss', token: 'tok_123', files: { 'content/posts.json': Buffer.from(seed) } }); global.fetch = gh.fetch; };
 const ev = (body, pw = 'correct horse', method = 'POST') => ({ httpMethod: method, headers: pw == null ? {} : { authorization: 'Bearer ' + pw }, body: JSON.stringify(body || {}) });
 const call = async (fn, e) => { const r = await fn(e); return { status: r.statusCode, body: JSON.parse(r.body) }; };
-const base = { title: 'A New Thing', subtitle: 'sub', kind: 'episode', season: 2, episode: 19, status: 'published', date: '2026-10-01', cover: '', body: '<p>Hello there.</p>' };
+const base = { title: 'A New Thing', subtitle: 'sub', kind: 'episode', season: 2, episode: 99, status: 'published', date: '2026-10-01', cover: '', body: '<p>Hello there.</p>' };
 
 test('rejects missing / wrong password, wrong method', async () => {
   fresh();
@@ -34,7 +35,7 @@ test('reports clearly when the server is not configured', async () => {
 
 test('list returns every post with its full text', async () => {
   fresh(); const r = await call(list, ev({}));
-  assert.equal(r.status, 200); assert.equal(r.body.posts.length, 58);
+  assert.equal(r.status, 200); assert.equal(r.body.posts.length, N);
   assert.ok(r.body.posts.every((p) => p.body.length > 50));
 });
 
@@ -46,7 +47,7 @@ test('editing a post changes only that post, sanitizes it, keeps its URL', async
   assert.equal(edited.slug, 'non-perishable-items');                    // URL never changes on edit
   assert.equal(edited.title, 'Non-Perishable Items (fixed)');
   assert.equal(edited.body, '<p>Fixed typo.</p><p>ok</p>');             // script + onclick stripped
-  assert.equal(after.length, 58);
+  assert.equal(after.length, N);
   assert.deepEqual(after.filter((p) => p.id !== target.id), before.filter((p) => p.id !== target.id)); // nothing else touched
   assert.equal(gh.commits.at(-1).message, 'Edit: Non-Perishable Items (fixed)');
 });
@@ -56,7 +57,7 @@ test('a new post gets a unique slug and sensible defaults', async () => {
   const a = await call(save, ev({ isNew: true, post: base }));
   const b = await call(save, ev({ isNew: true, post: base }));
   assert.equal(a.body.post.slug, 'a-new-thing'); assert.equal(b.body.post.slug, 'a-new-thing-2');
-  assert.equal(gh.json('content/posts.json').length, 60);
+  assert.equal(gh.json('content/posts.json').length, N + 2);
   const poem = await call(save, ev({ isNew: true, post: { ...base, title: 'Tiny Poem', kind: 'poem', season: 4, episode: 9 } }));
   assert.equal(poem.body.post.season, null); assert.equal(poem.body.post.episode, null);
   const fin = await call(save, ev({ isNew: true, post: { ...base, title: 'The End', finale: true, episode: 3 } }));
@@ -118,7 +119,7 @@ test('a GitHub outage is reported, not swallowed', async () => {
 
 test('integration: a saved post shows up in the rebuilt site', async () => {
   fresh(); const { execSync } = require('child_process'); const os = require('os');
-  await call(save, ev({ isNew: true, post: { ...base, title: 'Brand New Episode', season: 2, episode: 19, body: '<p>' + 'word '.repeat(120) + '</p>' } }));
+  await call(save, ev({ isNew: true, post: { ...base, title: 'Brand New Episode', season: 2, episode: 99, body: '<p>' + 'word '.repeat(120) + '</p>' } }));
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wss-')); fs.mkdirSync(path.join(tmp, 'content'));
   for (const f of ['build.js', 'package.json']) fs.copyFileSync(path.join(ROOT, f), path.join(tmp, f));
   fs.cpSync(path.join(ROOT, 'lib'), path.join(tmp, 'lib'), { recursive: true }); fs.cpSync(path.join(ROOT, 'src'), path.join(tmp, 'src'), { recursive: true });
@@ -128,7 +129,7 @@ test('integration: a saved post shows up in the rebuilt site', async () => {
   execSync('node build.js', { cwd: tmp, stdio: 'pipe' });
   const page = fs.readFileSync(path.join(tmp, 'dist/read/brand-new-episode.html'), 'utf8');
   assert.match(page, /Brand New Episode/);
-  assert.match(page, /Season 2 \u00b7 Episode 18/);                      // previous link points at E18
+  assert.match(page, /Season 2 \u00b7 Episode 19/);                      // previous link points at E19
   assert.match(fs.readFileSync(path.join(tmp, 'dist/archive.html'), 'utf8'), /Brand New Episode/);
   fs.rmSync(tmp, { recursive: true, force: true });
 });
