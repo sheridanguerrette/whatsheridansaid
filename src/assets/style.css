@@ -1302,3 +1302,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* signup sits between the tag and the title */
 .read-header .read-sub-line{ margin-top:16px; }
 .read-header .read-sub-form{ margin-bottom:34px; }
+
+/* quieter signup: underline field + text button, so it reads as part of the header */
+.read-header .read-sub-line{ margin-top:14px; font-size:12px; letter-spacing:0.02em; }
+.read-header .read-sub-form{ max-width:340px; margin:8px auto 38px; gap:0; border-bottom:1px solid var(--hairline); align-items:center; transition:border-color 0.2s ease; }
+.read-header .read-sub-form:focus-within{ border-color:var(--ink); }
+.read-header .read-sub-form input[type="email"]{ border:0; background:transparent; padding:10px 4px; font-size:13px; text-align:left; }
+.read-header .read-sub-form input[type="email"]:focus{ border:0; }
+.read-header .read-sub-form button{ background:transparent; color:var(--ink); padding:10px 4px 10px 12px; font-size:11px; letter-spacing:0.18em; }
+.read-header .read-sub-form button::after{ content:" \2192"; }
+.read-header .read-sub-form.submitted{ border-bottom-color:transparent; }
+.read-header .read-sub-form .form-note{ margin:0; padding:10px 0; }
