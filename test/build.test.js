@@ -44,7 +44,9 @@ const a = fs.readFileSync(dist('archive.html'), 'utf8'); const po = fs.readFileS
 const eps = posts.filter((p) => p.kind !== 'poem').length; const poems = posts.filter((p) => p.kind === 'poem').length;
 if ((a.match(/<a class="card"/g) || []).length !== eps) fail('archive card count');
 const picks = (JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'content', 'homepage.json'), 'utf8')).poetryPicks || []).length;
-if ((po.match(/<a class="card"/g) || []).length !== poems + picks) fail('poetry card count');
+if ((po.match(/<a class="card"/g) || []).length !== Math.min(poems, 8) + picks + poems) fail('poetry card count (latest slider + picks + full archive)');
+const grid = po.split('id="archiveGrid"')[1] || '';
+if ((grid.match(/<a class="card"/g) || []).length !== poems) fail('poetry archive must list every poem');
 if (/<!--[A-Z_]+-->/.test(a + po)) fail('unfilled template marker');
 if (!fs.existsSync(dist('sitemap.xml')) || !fs.existsSync(dist('robots.txt'))) fail('sitemap/robots missing');
 if (fs.existsSync(dist('content')) || fs.existsSync(dist('posts.json'))) fail('content leaked into dist');

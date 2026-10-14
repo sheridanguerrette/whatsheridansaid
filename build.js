@@ -127,7 +127,7 @@ const ordinal = new Map(poems.map((x, i) => [x.slug, i + 1])); // page script so
 fill('poetry.template.html', 'poetry.html', {
   '<!--POEMS_PICKS-->': pickPosts(HOME.poetryPicks || HOME.featuredPoems, 'poetryPicks').map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
   '<!--POEMS_FREE-->': poemsNewest.slice(0, SLIDER_N).map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
-  '<!--POEMS_PAID-->': poemsNewest.slice(SLIDER_N).map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
+  '<!--POEMS_PAID-->': poemsNewest.map((x) => card(x, 1, ordinal.get(x.slug))).join('\n'),
 });
 
 fill('index.template.html', 'index.html', {
