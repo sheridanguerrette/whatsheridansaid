@@ -78,6 +78,29 @@
     });
   })();
 
+  // ---------- paid-member mailing address form (/mail) ----------
+  (function(){
+    var form = document.getElementById('addressForm');
+    if(!form) return;
+    var err = document.getElementById('addressError');
+    var done = document.getElementById('addressDone');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      err.textContent = '';
+      var data = {};
+      Array.prototype.forEach.call(form.elements, function(el){ if(el.name) data[el.name] = el.value; });
+      var btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true; var label = btn.textContent; btn.textContent = 'Sending\u2026';
+      fetch('/.netlify/functions/mail-address', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok:r.ok, j:j }; }); })
+        .then(function(res){
+          if(res.ok){ form.hidden = true; done.hidden = false; window.scrollTo({ top: 0, behavior:'smooth' }); }
+          else { err.textContent = (res.j && res.j.error) || 'Something went wrong. Please try again.'; btn.disabled = false; btn.textContent = label; }
+        })
+        .catch(function(){ err.textContent = 'Something went wrong. Please try again, or message me through the footer.'; btn.disabled = false; btn.textContent = label; });
+    });
+  })();
+
   // ---------- nav solidifies on scroll ----------
   var headerEl = document.querySelector('header');
   if(headerEl){

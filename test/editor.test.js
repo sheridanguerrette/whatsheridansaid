@@ -13,7 +13,8 @@ process.env.ADMIN_PASSWORD = 'open sesame'; process.env.GITHUB_TOKEN = 'tok'; pr
 process.env.SITE_URL = 'https://site.test';
 const fns = {
   'admin-list': require('../netlify/functions/admin-list').handler, 'admin-save': require('../netlify/functions/admin-save').handler, 'admin-upload': require('../netlify/functions/admin-upload').handler,
-  'admin-signups-list': require('../netlify/functions/admin-signups-list').handler, 'admin-signups-update': require('../netlify/functions/admin-signups-update').handler, };
+  'admin-signups-list': require('../netlify/functions/admin-signups-list').handler, 'admin-signups-update': require('../netlify/functions/admin-signups-update').handler,
+  'admin-addresses-list': require('../netlify/functions/admin-addresses-list').handler, 'admin-addresses-update': require('../netlify/functions/admin-addresses-update').handler, };
 
 const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
 const until = async (fn, ms = 2000) => { const t = Date.now(); while (Date.now() - t < ms) { if (fn()) return true; await tick(10); } return false; };
@@ -190,4 +191,28 @@ test('signups tab: empty state', async () => {
   const b = boot(); await b.login('open sesame');
   b.$('navSubs').click(); await until(() => !/Loading/.test(b.$('subRows').textContent));
   assert.match(b.$('subRows').textContent, /No signups yet/);
+});
+
+test('addresses tab: lists addresses, copies them, removes one', async () => {
+  blobs.reset();
+  const b = boot(); await b.login('open sesame');
+  const { saveAddress } = require('../lib/addresses');
+  await saveAddress({ name: 'Ada Lovelace', email: 'ada@example.com', line1: '1 Main St', city: 'London', postal: 'N1 1AA', country: 'United Kingdom' });
+  await saveAddress({ name: 'Grace Hopper', email: 'grace@example.com', line1: '2 Oak Ave', line2: 'Apt 4', city: 'Arlington', region: 'VA', postal: '22201', country: 'USA' });
+  b.$('navAddr').click();
+  assert.equal(b.visible('addrView'), true);
+  await until(() => /Ada Lovelace/.test(b.$('addrRows').textContent));
+  assert.match(b.$('addrRows').textContent, /Grace Hopper/);
+  assert.match(b.$('addrRows').textContent, /Arlington, VA 22201|Arlington, VA, 22201/);
+  assert.match(b.$('addrRows').textContent, /2 total/);
+  b.d.querySelector('[data-del-addr="ada@example.com"]').click();
+  await until(() => !/Ada Lovelace/.test(b.$('addrRows').textContent));
+  assert.match(b.$('addrRows').textContent, /Grace Hopper/);
+});
+
+test('addresses tab: empty state', async () => {
+  blobs.reset();
+  const b = boot(); await b.login('open sesame');
+  b.$('navAddr').click(); await until(() => !/Loading/.test(b.$('addrRows').textContent));
+  assert.match(b.$('addrRows').textContent, /No addresses yet/);
 });

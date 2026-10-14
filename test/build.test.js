@@ -39,6 +39,8 @@ for (const f of ['index.html', 'archive.html', 'poetry.html', 'about.html']) {
 const nav = fs.readFileSync(dist('read', 'non-perishable-items.html'), 'utf8');
 if (!/nav-tag">Season 2 \u00b7 Episode 16</.test(nav) || !/nav-tag">Season 2 \u00b7 Episode 18</.test(nav)) fail('prev/next missing season/episode');
 
+if (!fs.existsSync(dist('mail.html'))) fail('mail.html missing');
+
 // archive + poetry
 const a = fs.readFileSync(dist('archive.html'), 'utf8'); const po = fs.readFileSync(dist('poetry.html'), 'utf8');
 const eps = posts.filter((p) => p.kind !== 'poem').length; const poems = posts.filter((p) => p.kind === 'poem').length;
