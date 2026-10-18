@@ -53,7 +53,7 @@ test('log in, browse, search and filter all posts', async () => {
   const b = boot(); await b.login('open sesame');
   assert.equal(b.visible('listView'), true); assert.equal(b.rows().length, N);
   b.type('search', 'mr. cigar'); assert.equal(b.rows().length, 1); b.type('search', '');
-  b.d.querySelector('[data-filter="poem"]').click(); assert.equal(b.rows().length, 12);
+  b.d.querySelector('[data-filter="poem"]').click(); assert.equal(b.rows().length, SEED.filter((x) => x.kind === 'poem').length);
   assert.ok(b.d.querySelector('.row .rthumb img'));
   b.d.querySelector('[data-filter="draft"]').click(); assert.match(b.$('rows').textContent, /Nothing matches/);
   assert.deepEqual(b.errors, []);

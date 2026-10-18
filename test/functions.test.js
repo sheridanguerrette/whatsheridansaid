@@ -6,6 +6,7 @@ const { createFakeGitHub } = require('./fake-github');
 const ROOT = path.join(__dirname, '..');
 const seed = fs.readFileSync(path.join(ROOT, 'content/posts.json'));
 const N = JSON.parse(seed).length;
+const PREV_EP = Math.max(...JSON.parse(seed).filter((x) => x.kind === 'episode' && x.season === 2 && x.episode < 99).map((x) => x.episode));
 process.env.ADMIN_PASSWORD = 'correct horse'; process.env.GITHUB_TOKEN = 'tok_123';
 process.env.GITHUB_REPO = 'me/wss'; process.env.GITHUB_BRANCH = 'main'; process.env.AUTH_FAIL_DELAY_MS = '0';
 
@@ -129,7 +130,7 @@ test('integration: a saved post shows up in the rebuilt site', async () => {
   execSync('node build.js', { cwd: tmp, stdio: 'pipe' });
   const page = fs.readFileSync(path.join(tmp, 'dist/read/brand-new-episode.html'), 'utf8');
   assert.match(page, /Brand New Episode/);
-  assert.match(page, /Season 2 \u00b7 Episode 19/);                      // previous link points at E19
+  assert.match(page, new RegExp('Season 2 \\u00b7 Episode ' + PREV_EP));          // previous link points at the latest earlier episode
   assert.match(fs.readFileSync(path.join(tmp, 'dist/archive.html'), 'utf8'), /Brand New Episode/);
   fs.rmSync(tmp, { recursive: true, force: true });
 });

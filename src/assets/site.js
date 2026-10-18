@@ -155,7 +155,7 @@
       btn.addEventListener('click', function(){
         var thread = btn.getAttribute('data-thread');
         if(armed === thread){
-          window.location.href = 'archive.html?thread=' + encodeURIComponent(thread);
+          window.location.href = '/archive.html?thread=' + encodeURIComponent(thread);
           return;
         }
         reset();
@@ -166,7 +166,7 @@
       });
     });
     nudgeGo.addEventListener('click', function(){
-      if(armed) window.location.href = 'archive.html?thread=' + encodeURIComponent(armed);
+      if(armed) window.location.href = '/archive.html?thread=' + encodeURIComponent(armed);
     });
   })();
 
