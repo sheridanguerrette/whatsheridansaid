@@ -3,15 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Store — What Sheridan Said</title>
+<title>Sheridan’s Store — What Sheridan Said</title>
 <link rel="stylesheet" href="assets/style.css">
 <style>
-.product-grid { max-width: 1100px; margin: 0 auto; padding: 40px 6vw 80px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
+.product-grid { max-width: 1100px; margin: 0 auto; padding: 20px 6vw 80px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
 .product { background: #161616; border: 1px solid rgba(255,255,255,0.08); padding: 24px; }
-.product img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 16px; background: #111; }
+.product img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 16px; background: #111; filter: grayscale(0.15); }
 .product h3 { font-family: 'Gloock', serif; font-size: 1.4rem; margin-bottom: 8px; }
-.product .price { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: #8f8f89; margin-bottom: 16px; }
-.product a.buy { display: inline-block; padding: 12px 28px; background: #f5f5f2; color: #0a0a0a; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; }
+.product .price { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: #8f8f89; margin-bottom: 12px; }
+.product p { font-size: 15px; line-height: 1.6; color: #d8d8d4; margin-bottom: 20px; }
+.product a.buy { display: inline-block; padding: 12px 28px; background: #f5f5f2; color: #0a0a0a; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; width: 100%; text-align: center; }
+.product a.buy:hover { opacity: 0.85; }
 </style>
 </head>
 <body>
@@ -29,8 +31,9 @@
 </header>
 
 <div class="page-header">
-  <div class="eyebrow">Work & Editions</div>
-  <h1>Store</h1>
+  <div class="eyebrow">Store</div>
+  <h1>Sheridan’s Store</h1>
+  <p>Most of these pieces came from deep-rooted feelings I didn’t know what to do with. I opened my mind and drew what I slowly saw. A few are connected to poems — read the descriptions. Some are canvas, some are prints. If you’d like a piece in a different format, contact me directly.</p>
 </div>
 
 <div id="products" class="product-grid">
@@ -47,7 +50,8 @@ fetch('/.netlify/functions/printful-products')
       <div class="product">
         <img src="${p.thumbnail || ''}" alt="${p.name}">
         <h3>${p.name}</h3>
-        <div class="price">${p.price ? '$' + p.price : ''}</div>
+        <div class="price">${p.price ? '$' + p.price + ' USD' : ''}</div>
+        <p>${p.description || ''}</p>
         <a class="buy" href="https://www.printful.com/dashboard" target="_blank">Get it</a>
       </div>
     `).join('');
