@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Store — What Sheridan Said</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.product-grid { max-width: 1100px; margin: 0 auto; padding: 40px 6vw 80px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
+.product { background: #161616; border: 1px solid rgba(255,255,255,0.08); padding: 24px; }
+.product img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 16px; background: #111; }
+.product h3 { font-family: 'Gloock', serif; font-size: 1.4rem; margin-bottom: 8px; }
+.product .price { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: #8f8f89; margin-bottom: 16px; }
+.product a.buy { display: inline-block; padding: 12px 28px; background: #f5f5f2; color: #0a0a0a; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html">WHAT SHERIDAN SAID</a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="archive.html">Archive</a></li>
+      <li><a href="poetry.html">Poetry</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="store.html" class="current">Store</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="page-header">
+  <div class="eyebrow">Work & Editions</div>
+  <h1>Store</h1>
+</div>
+
+<div id="products" class="product-grid">
+  <div style="grid-column:1/-1;text-align:center;color:#8f8f89;">Loading…</div>
+</div>
+
+<script>
+fetch('/.netlify/functions/printful-products')
+  .then(r => r.json())
+  .then(products => {
+    const el = document.getElementById('products');
+    if (!products.length) { el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#8f8f89;">No products yet.</div>'; return; }
+    el.innerHTML = products.map(p => `
+      <div class="product">
+        <img src="${p.thumbnail || ''}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <div class="price">${p.price ? '$' + p.price : ''}</div>
+        <a class="buy" href="https://www.printful.com/dashboard" target="_blank">Get it</a>
+      </div>
+    `).join('');
+  })
+  .catch(() => {
+    document.getElementById('products').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#8f8f89;">Could not load products.</div>';
+  });
+</script>
+</body>
+</html>
