@@ -51,7 +51,7 @@ fetch('/.netlify/functions/printful-products')
         <img src="${p.thumbnail || ''}" alt="${p.name}">
         <h3>${p.name}</h3>
         <div class="price">${p.price ? '$' + p.price + ' USD' : ''}</div>
-        <p>${p.description || ''}</p>
+        <p>${p.formats || ''}${p.sizes ? '<br>Sizes: ' + p.sizes : ''}</p>
         <a class="buy" href="https://www.printful.com/dashboard" target="_blank">Get it</a>
       </div>
     `).join('');
