@@ -10,6 +10,7 @@
 .product { background: #161616; border: 1px solid rgba(255,255,255,0.08); padding: 24px; }
 .product img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 16px; background: #111; filter: grayscale(0.15); }
 .product h3 { font-family: 'Gloock', serif; font-size: 1.4rem; margin-bottom: 8px; }
+.product h3 a, .product a.pic { color: inherit; text-decoration: none; }
 .product .price { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: #8f8f89; margin-bottom: 12px; }
 .product p { font-size: 15px; line-height: 1.6; color: #d8d8d4; margin-bottom: 20px; }
 .product a.buy { display: inline-block; padding: 12px 28px; background: #f5f5f2; color: #0a0a0a; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; width: 100%; text-align: center; }
@@ -48,11 +49,11 @@ fetch('/.netlify/functions/printful-products')
     if (!products.length) { el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#8f8f89;">No products yet.</div>'; return; }
     el.innerHTML = products.map(p => `
       <div class="product">
-        <img src="${p.thumbnail || ''}" alt="${p.name}">
-        <h3>${p.name}</h3>
+        <a class="pic" href="product.html?id=${p.id}"><img src="${p.thumbnail || ''}" alt="${p.name}"></a>
+        <h3><a href="product.html?id=${p.id}">${p.name}</a></h3>
         <div class="price">${p.price ? '$' + p.price + ' USD' : ''}</div>
-        <p>${p.formats || ''}${p.sizes ? '<br>Sizes: ' + p.sizes : ''}</p>
-        <a class="buy" href="https://www.printful.com/dashboard" target="_blank">Get it</a>
+        <p>${p.sizes ? 'Sizes: ' + p.sizes : ''}</p>
+        <a class="buy" href="product.html?id=${p.id}">Get it</a>
       </div>
     `).join('');
   })
