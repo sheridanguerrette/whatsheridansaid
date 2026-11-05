@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Store — What Sheridan Said</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.pd { max-width: 1100px; margin: 0 auto; padding: 20px 6vw 80px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+.pd .main { width: 100%; aspect-ratio: 1; object-fit: cover; background: #111; filter: grayscale(0.15); display: block; }
+.pd .thumbs { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.pd .thumbs img { width: 64px; height: 64px; object-fit: cover; cursor: pointer; opacity: 0.55; border: 1px solid transparent; background: #111; }
+.pd .thumbs img.on { opacity: 1; border-color: #f5f5f2; }
+.pd h1 { font-family: 'Gloock', serif; font-size: 2rem; margin-bottom: 8px; }
+.pd .price { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: #8f8f89; margin-bottom: 24px; }
+.pd select { width: 100%; padding: 12px; background: #161616; color: #f5f5f2; border: 1px solid rgba(255,255,255,0.2); font-size: 15px; margin-bottom: 16px; }
+.pd button { width: 100%; padding: 12px 28px; background: #f5f5f2; color: #0a0a0a; border: 0; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; }
+.pd button:disabled { opacity: 0.5; cursor: default; }
+.pd .err { color: #d8a0a0; font-size: 14px; margin-top: 12px; }
+.back { max-width: 1100px; margin: 0 auto; padding: 0 6vw; }
+.back a { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #8f8f89; text-decoration: none; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html">WHAT SHERIDAN SAID</a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="archive.html">Archive</a></li>
+      <li><a href="poetry.html">Poetry</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="store.html" class="current">Store</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="back"><a href="store.html">← Back to the store</a></div>
+
+<div id="pd" class="pd">
+  <div style="grid-column:1/-1;text-align:center;color:#8f8f89;">Loading…</div>
+</div>
+
+<script>
+const box = document.getElementById('pd');
+const say = t => { box.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#8f8f89;">' + t + '</div>'; };
+const id = new URLSearchParams(location.search).get('id');
+
+if (!id) say('Product not found.');
+else fetch('/.netlify/functions/product-detail?id=' + encodeURIComponent(id))
+  .then(r => r.json())
+  .then(p => {
+    if (p.error) throw new Error('not found');
+    document.title = p.name + ' — What Sheridan Said';
+    const imgs = p.images.length ? p.images : [p.thumbnail];
+    const multi = new Set(p.variants.map(v => v.format)).size > 1;
+    const label = v => multi ? v.format + ' — ' + v.size : v.size;
+    box.innerHTML = `
+      <div>
+        <img class="main" id="main" src="${imgs[0]}" alt="${p.name}">
+        <div class="thumbs">${imgs.length > 1 ? imgs.map((u, i) => `<img src="${u}" alt="" class="${i ? '' : 'on'}">`).join('') : ''}</div>
+      </div>
+      <div>
+        <h1>${p.name}</h1>
+        <div class="price" id="price"></div>
+        <select id="size">${p.variants.map(v => `<option value="${v.id}">${label(v)}</option>`).join('')}</select>
+        <button id="buy">Get it</button>
+        <div class="err" id="err"></div>
+      </div>`;
+
+    const sel = document.getElementById('size');
+    const price = document.getElementById('price');
+    const showPrice = () => {
+      const v = p.variants.find(x => String(x.id) === sel.value);
+      price.textContent = v && v.price ? '$' + v.price + ' USD' : '';
+    };
+    sel.addEventListener('change', showPrice);
+    showPrice();
+
+    box.querySelectorAll('.thumbs img').forEach(t => t.addEventListener('click', () => {
+      document.getElementById('main').src = t.src;
+      box.querySelectorAll('.thumbs img').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+    }));
+
+    const btn = document.getElementById('buy');
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = 'One moment…';
+      document.getElementById('err').textContent = '';
+      try {
+        const r = await fetch('/.netlify/functions/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: p.id, variantId: Number(sel.value) })
+        });
+        const d = await r.json();
+        if (!d.url) throw new Error('no url');
+        location.href = d.url;
+      } catch (e) {
+        btn.disabled = false; btn.textContent = 'Get it';
+        document.getElementById('err').textContent = 'Something went wrong. Please try again.';
+      }
+    });
+  })
+  .catch(() => say('Could not load this product.'));
+</script>
+</body>
+</html>
