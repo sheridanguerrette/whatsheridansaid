@@ -18,6 +18,8 @@
 </style>
 </head>
 <body>
+<div class="cursor-heart" id="cursorHeart">&#9825;</div>
+
 <header>
   <a class="logo" href="index.html">WHAT SHERIDAN SAID</a>
   <nav>
@@ -61,5 +63,7 @@ fetch('/.netlify/functions/printful-products')
     document.getElementById('products').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#8f8f89;">Could not load products.</div>';
   });
 </script>
+
+<script src="assets/site.js"></script>
 </body>
 </html>
